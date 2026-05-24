@@ -1,4 +1,4 @@
-// ─── IndexedDB con idb ────────────────────────────────────────────────────────
+// ------- IndexedDB con idb -------
 // Almacena datos localmente cuando no hay conexión al backend
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb'
@@ -50,20 +50,20 @@ export async function getDB(): Promise<IDBPDatabase<AgroSmartDB>> {
   return db
 }
 
-// ─── Guardar en cache para lectura offline ────────────────────────────────────
+// ------- Guardar en cache para lectura offline -------
 export async function saveToCache(key: string, data: unknown): Promise<void> {
   const database = await getDB()
   await database.put('cache', { key, data, cachedAt: new Date().toISOString() })
 }
 
-// ─── Leer del cache ───────────────────────────────────────────────────────────
+// ------- Leer del cache -------
 export async function readFromCache<T>(key: string): Promise<T | null> {
   const database = await getDB()
   const entry = await database.get('cache', key)
   return entry ? (entry.data as T) : null
 }
 
-// ─── Guardar request pendiente para sync posterior ────────────────────────────
+// ------- Guardar request pendiente para sync posterior -------
 export async function savePendingRequest(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,
@@ -79,13 +79,13 @@ export async function savePendingRequest(
   })
 }
 
-// ─── Obtener todos los pendientes ─────────────────────────────────────────────
+// ------- Obtener todos los pendientes -------
 export async function getPendingRequests() {
   const database = await getDB()
   return database.getAll('pendingRequests')
 }
 
-// ─── Eliminar un pendiente (ya sincronizado) ──────────────────────────────────
+// ------- Eliminar un pendiente (ya sincronizado) -------
 export async function deletePendingRequest(id: number): Promise<void> {
   const database = await getDB()
   await database.delete('pendingRequests', id)

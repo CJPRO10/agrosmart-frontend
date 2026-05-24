@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
-  title: 'AgroMagdalena',
+  title: 'AgroSmart',
   description: 'Plataforma Digital de Agricultura Inteligente para Pequeños Productores del Magdalena',
   manifest: '/manifest.json',
   icons: { icon: '/favicon.ico' },

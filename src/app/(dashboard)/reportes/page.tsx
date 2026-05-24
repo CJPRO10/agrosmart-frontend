@@ -70,7 +70,7 @@ export default function ReportesPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Centro de Reportes</h1>
@@ -80,7 +80,7 @@ export default function ReportesPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* ------- Stats ------- */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(150px,1fr))', gap:'12px' }}>
         {stats.map(s => (
           <div key={s.label} className="card" style={{ display:'flex', alignItems:'center', gap:'12px', padding:'16px' }}>
@@ -95,10 +95,10 @@ export default function ReportesPage() {
         ))}
       </div>
 
-      {/* Contenido: tabla + formulario */}
+      {/* ------- Contenido: tabla + formulario ------- */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:'1rem', alignItems:'start' }}>
 
-        {/* Historial de reportes */}
+        {/* ------- Historial de reportes ------- */}
         <div className="card" style={{ padding:0, overflow:'hidden' }}>
           <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--color-outline-variant)', display:'flex', gap:'12px', alignItems:'center', flexWrap:'wrap' }}>
             <h3 style={{ margin:0, fontSize:'1rem', fontWeight:600, color:'var(--color-on-surface)', flex:1 }}>Historial de reportes</h3>
@@ -164,7 +164,7 @@ export default function ReportesPage() {
           )}
         </div>
 
-        {/* Formulario generar */}
+        {/* ------- Formulario generar ------- */}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
           <h3 style={{ margin:0, fontSize:'1rem', fontWeight:600, color:'var(--color-on-surface)' }}>Generar Nuevo Reporte</h3>
           <form onSubmit={handleGenerar} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -216,7 +216,7 @@ export default function ReportesPage() {
         </div>
       </div>
 
-      {/* Confirm delete */}
+      {/* ------- Confirm delete ------- */}
       {confirmDelete !== null && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'360px', textAlign:'center' }}>

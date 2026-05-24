@@ -89,7 +89,7 @@ export default function PerfilPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem', maxWidth:'760px', margin:'0 auto' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div>
         <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mi Perfil</h1>
         <p style={{ fontSize:'0.875rem', color:'var(--color-on-surface-variant)', marginTop:'4px' }}>
@@ -97,7 +97,7 @@ export default function PerfilPage() {
         </p>
       </div>
 
-      {/* Mensajes */}
+      {/* ------- Mensajes ------- */}
       {error && (
         <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem' }} className="animate-fade-in">
           <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
@@ -118,7 +118,7 @@ export default function PerfilPage() {
         </div>
       ) : (
         <>
-          {/* Card perfil */}
+          {/* ------- Card perfil ------- */}
           <div className="card">
             {/* Avatar + info básica */}
             <div style={{ display:'flex', alignItems:'center', gap:'20px', marginBottom:'24px', paddingBottom:'24px', borderBottom:'1px solid var(--color-outline-variant)' }}>
@@ -143,7 +143,7 @@ export default function PerfilPage() {
             </div>
 
             {!editando ? (
-              /* Vista datos */
+              /* ------- Vista datos ------- */
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px' }}>
                 {[
                   { label:'Nombre',     value: perfil?.nombre,     icon:'person'    },
@@ -163,7 +163,7 @@ export default function PerfilPage() {
                 ))}
               </div>
             ) : (
-              /* Formulario edición */
+              /* ------- Formulario edición -------*/
               <form onSubmit={handleGuardar} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div>
@@ -206,7 +206,7 @@ export default function PerfilPage() {
             )}
           </div>
 
-          {/* Zona de peligro */}
+          {/* ------- Zona de peligro ------- */}
           <div className="card" style={{ borderColor:'var(--color-error-container)' }}>
             <h3 style={{ fontSize:'1rem', fontWeight:600, color:'var(--color-error)', margin:'0 0 8px', display:'flex', alignItems:'center', gap:'6px' }}>
               <span className="material-symbols-outlined" style={{fontSize:'20px'}}>warning</span>
@@ -229,7 +229,7 @@ export default function PerfilPage() {
         </>
       )}
 
-      {/* Confirm eliminar cuenta */}
+      {/* ------- Confirm eliminar cuenta ------- */}
       {confirmEliminar && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'400px', textAlign:'center' }}>

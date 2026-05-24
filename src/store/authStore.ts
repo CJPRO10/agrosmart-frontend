@@ -1,4 +1,4 @@
-// ─── Store de Autenticación (Zustand) ────────────────────────────────────────
+// -------Store de Autenticación (Zustand) -------
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { LoginResponse, Rol } from '@/types'

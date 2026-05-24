@@ -3,9 +3,6 @@
 import { useState } from 'react'
 import { useAuthStore } from '@/store/authStore'
 
-// Finanzas: el backend tiene la entidad pero no expone controller REST propio.
-// Esta página funciona con estado local y está lista para conectar cuando el endpoint esté disponible.
-
 type TipoTransaccion = 'INGRESO' | 'EGRESO'
 
 interface Finanza {
@@ -95,7 +92,7 @@ export default function FinanzasPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Finanzas</h1>
@@ -109,7 +106,7 @@ export default function FinanzasPage() {
         </button>
       </div>
 
-      {/* Cards resumen */}
+      {/* ------- Cards resumen ------- */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:'1rem' }}>
         {/* Balance total */}
         <div style={{ borderRadius:'16px', padding:'24px', background:'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%)', color:'white', gridColumn:'span 1' }}>
@@ -120,7 +117,7 @@ export default function FinanzasPage() {
           </p>
         </div>
 
-        {/* Ingresos */}
+        {/* ------- Ingresos -------*/}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
             <span className="material-symbols-outlined" style={{ fontSize:'20px', color:'var(--color-primary)' }}>trending_up</span>
@@ -129,7 +126,7 @@ export default function FinanzasPage() {
           <p style={{ fontSize:'1.5rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>{formatCOP(ingresos)}</p>
         </div>
 
-        {/* Egresos */}
+        {/* ------- Egresos -------*/}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
             <span className="material-symbols-outlined" style={{ fontSize:'20px', color:'var(--color-error)' }}>trending_down</span>
@@ -139,7 +136,7 @@ export default function FinanzasPage() {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* ------- Filtros ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', alignItems:'center' }}>
         {(['TODAS','INGRESO','EGRESO'] as const).map(t => (
           <button key={t} onClick={() => setFiltroTipo(t)}
@@ -158,7 +155,7 @@ export default function FinanzasPage() {
         </select>
       </div>
 
-      {/* Tabla transacciones */}
+      {/* ------- Tabla transacciones ------- */}
       <div className="card" style={{ padding:0, overflow:'hidden' }}>
         <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--color-outline-variant)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <h3 style={{ margin:0, fontSize:'1rem', fontWeight:600, color:'var(--color-on-surface)' }}>Historial de transacciones</h3>
@@ -220,13 +217,13 @@ export default function FinanzasPage() {
         )}
       </div>
 
-      {/* Aviso backend */}
+      {/* ------- Aviso backend ------- */}
       <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-secondary-fixed)', color:'var(--color-on-secondary-fixed)', fontSize:'0.8rem' }}>
         <span className="material-symbols-outlined" style={{fontSize:'18px'}}>info</span>
         Los datos se sincronizan localmente. Cuando el endpoint <strong>/api/finanzas</strong> esté disponible en el backend, se conectará automáticamente.
       </div>
 
-      {/* Modal crear/editar */}
+      {/* -------Modal crear/editar -------*/}
       {modalOpen && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'480px' }}>
@@ -290,7 +287,7 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Confirm delete */}
+      {/* ------- Confirm delete ------- */}
       {confirmDelete !== null && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'360px', textAlign:'center' }}>

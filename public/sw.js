@@ -1,5 +1,5 @@
-// Service Worker - AgroMagdalena
-// Estrategia: Cache First para assets, Network First para API, Offline fallback
+// Service Worker para Agrosmart
+// Cache First para assets, Network First para API, Offline fallback
 
 const CACHE_NAME = 'agrosmart-v1'
 const OFFLINE_PAGE = '/offline'
@@ -11,7 +11,7 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ]
 
-// ─── Install: cachea los assets estáticos esenciales ─────────────────────────
+// ─── Install: cachea los assets estáticos esenciales ───────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -19,7 +19,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting()
 })
 
-// ─── Activate: limpia caches viejos ──────────────────────────────────────────
+// ─── Activate: limpia caches viejos ────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -31,19 +31,17 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// ─── Fetch: lógica offline-first ─────────────────────────────────────────────
+// ─── Fetch: lógica offline-first ───────
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // 1. Llamadas al backend (API) → Network First, fallback a IndexedDB (manejado en el cliente)
+  // Llamadas al backend (API) → Network First, fallback a IndexedDB en el cliente
   if (url.pathname.startsWith('/api') || url.hostname === 'localhost' && url.port === '8080') {
-    // Las llamadas API las maneja la capa de lib/offline en el cliente con IndexedDB
-    // El SW solo deja pasar (no intercepta) para no complicar el flujo
     return
   }
 
-  // 2. Assets Next.js (_next/static) → Cache First (nunca cambian en el mismo build)
+  // Assets Next.js (_next/static) → Cache First nunca cambian en el mismo build
   if (url.pathname.startsWith('/_next/static')) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -58,7 +56,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 3. Páginas de la app → Network First, fallback al cache, luego /offline
+  // Páginas de la app → Network First, fallback al cache, luego /offline
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -74,7 +72,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 4. Todo lo demás → Network First con fallback a cache
+  // Todo lo demás → Network First con fallback a cache
   event.respondWith(
     fetch(request).catch(() => caches.match(request))
   )
@@ -88,8 +86,6 @@ self.addEventListener('sync', (event) => {
 })
 
 async function syncPendingRequests() {
-  // La lógica real de sync está en lib/offline/syncManager.ts
-  // El SW solo dispara el evento; el cliente hace el trabajo pesado
   const clients = await self.clients.matchAll()
   clients.forEach((client) => client.postMessage({ type: 'SYNC_TRIGGERED' }))
 }

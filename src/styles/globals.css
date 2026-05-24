@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* ── Design tokens AgroMagdalena ────────────────────────────────────────────*/
+/* ------- Design tokens AgroMagdalena ------- */
 @theme {
   --color-primary:                    #154212;
   --color-on-primary:                 #ffffff;
@@ -74,7 +74,7 @@
   --radius-full: 9999px;
 }
 
-/* ── Base ───────────────────────────────────────────────────────────────────*/
+/* ------- Base -------*/
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
@@ -103,7 +103,7 @@ body {
   vertical-align: middle;
 }
 
-/* ── Componentes ────────────────────────────────────────────────────────────*/
+/* ------- Componentes -------*/
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background-color: var(--color-primary); color: var(--color-on-primary);
@@ -195,7 +195,7 @@ body {
   background-size: cover; background-position: center;
 }
 
-/* ── Animaciones ────────────────────────────────────────────────────────────*/
+/* ── Animaciones ─────────*/
 @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
 @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes spin    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }

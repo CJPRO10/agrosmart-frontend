@@ -1,5 +1,4 @@
-// ─── Hook para detectar estado online/offline ─────────────────────────────────
-'use client'
+// -------Hook para detectar estado online/offline -------
 import { useEffect } from 'react'
 import { useUIStore } from '@/store/uiStore'
 

@@ -125,7 +125,7 @@ export default function TareasPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Tareas</h1>
@@ -139,7 +139,7 @@ export default function TareasPage() {
         </button>
       </div>
 
-      {/* Progreso */}
+      {/* ------- Progreso ------- */}
       {tareas.length > 0 && (
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
           <div style={{ display:'flex', justifyContent:'space-between' }}>
@@ -161,7 +161,7 @@ export default function TareasPage() {
         </div>
       )}
 
-      {/* Filtros y búsqueda */}
+      {/* ------- Filtros y búsqueda ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', alignItems:'center' }}>
         <div style={{ position:'relative', flex:1, minWidth:'200px' }}>
           <span className="material-symbols-outlined" style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)' }}>search</span>
@@ -186,7 +186,7 @@ export default function TareasPage() {
         </div>
       </div>
 
-      {/* Error */}
+      {/* ------- Error ------- */}
       {error && (
         <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem' }}>
           <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
@@ -197,14 +197,14 @@ export default function TareasPage() {
         </div>
       )}
 
-      {/* Loading */}
+      {/* ------- Loading ------- */}
       {loading && (
         <div style={{ display:'flex', justifyContent:'center', padding:'80px 0' }}>
           <span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>progress_activity</span>
         </div>
       )}
 
-      {/* Sin tareas */}
+      {/* ------- Sin tareas ------- */}
       {!loading && tareasFiltradas.length === 0 && !error && (
         <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'64px 24px', textAlign:'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'56px', color:'var(--color-primary-fixed)', marginBottom:'16px' }}>assignment</span>
@@ -219,7 +219,7 @@ export default function TareasPage() {
         </div>
       )}
 
-      {/* Lista tareas */}
+      {/* ------- Lista tareas ------- */}
       {!loading && tareasFiltradas.length > 0 && (
         <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
           {tareasFiltradas.map(tarea => {
@@ -230,7 +230,7 @@ export default function TareasPage() {
             return (
               <div key={tarea.idTarea} className="card" style={{ display:'flex', alignItems:'center', gap:'16px', padding:'16px', borderLeft:`4px solid ${cfg.color}` }}>
 
-                {/* Checkbox visual */}
+                {/* ------- Checkbox visual ------- */}
                 <div
                   onClick={() => cambiarEstado(tarea, estadoActual === 'COMPLETADA' ? 'PENDIENTE' : 'COMPLETADA')}
                   style={{
@@ -246,7 +246,7 @@ export default function TareasPage() {
                   )}
                 </div>
 
-                {/* Contenido */}
+                {/* ------- Contenido ------- */}
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
                     <span style={{ fontSize:'0.75rem', fontWeight:700, color:'var(--color-secondary)', textTransform:'uppercase', letterSpacing:'0.05em' }}>
@@ -284,7 +284,7 @@ export default function TareasPage() {
                   </div>
                 </div>
 
-                {/* Selector de estado */}
+                {/* ------- Selector de estado ------- */}
                 <select
                   value={estadoActual}
                   onChange={e => cambiarEstado(tarea, e.target.value as EstadoTarea)}
@@ -300,7 +300,7 @@ export default function TareasPage() {
         </div>
       )}
 
-      {/* Modal crear tarea */}
+      {/* ------- Modal crear tarea ------- */}
       {modalOpen && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'480px' }}>

@@ -1,4 +1,4 @@
-// ─── Sync Manager ─────────────────────────────────────────────────────────────
+// ------- Sync Manager -------
 // Cuando vuelve la conexión, reintenta los requests pendientes
 
 import apiClient from '@/lib/api/client'
@@ -23,7 +23,7 @@ export async function syncPendingRequests(): Promise<void> {
   }
 }
 
-// ─── Registrar Service Worker y escuchar eventos online ──────────────────────
+// ------- Registrar Service Worker y escuchar eventos online -------
 export function initOfflineSync(): void {
   if (typeof window === 'undefined') return
 
@@ -43,7 +43,7 @@ export function initOfflineSync(): void {
   }
 }
 
-// ─── Registrar el Service Worker ─────────────────────────────────────────────
+// ------- Registrar el Service Worker -------
 export async function registerServiceWorker(): Promise<void> {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
 

@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div style={{ minHeight:'100vh', backgroundColor:'var(--color-background)', display:'flex' }}>
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+      {/* ------- Sidebar ------- */}
       <aside style={{
         position:'fixed', left:0, top:0, height:'100%', zIndex:50,
         width: sidebarW, transition:'width 0.3s',
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* ── Área principal ────────────────────────────────────────────────── */}
+      {/* ------- Área principal ------- */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft:sidebarW, transition:'margin-left 0.3s' }}>
 
         {/* Topbar */}
@@ -196,13 +196,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* Contenido */}
+        {/* ------- Contenido ------- */}
         <main style={{ flex:1, padding:'24px' }}>
           {children}
         </main>
       </div>
 
-      {/* Banner offline */}
+      {/* ------- Banner offline ------- */}
       {!isOnline && (
         <div style={{
           position:'fixed', bottom:0, left:0, right:0, zIndex:50,

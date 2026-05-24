@@ -1,7 +1,7 @@
-// ─── Tipos globales AgroMagdalena ─────────────────────────────────────────────
+// ------ Tipos globales AgroSmart ------
 // Basados en los DTOs del backend Spring Boot (RAAR-18/AgroTech)
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// ---- Auth -------
 export type Rol = 'PRODUCTOR' | 'ADMINISTRADOR' | 'OPERARIO' | 'AUXILIAR'
 
 export interface LoginRequest {
@@ -29,7 +29,7 @@ export interface RegistroProductorRequest {
   idUbicacion: number
 }
 
-// ─── Usuario / Perfil ─────────────────────────────────────────────────────────
+// ------- Usuario / Perfil -------
 export interface Usuario {
   id: number
   nombre: string
@@ -46,7 +46,7 @@ export interface EditarPerfilRequest {
   telefono?: string
 }
 
-// ─── Finca ────────────────────────────────────────────────────────────────────
+// ------- Finca -------
 export interface Finca {
   idFinca: number
   nombreFinca: string
@@ -64,7 +64,7 @@ export interface FincaRequest {
   idUbicacion: number
 }
 
-// ─── Cultivo ──────────────────────────────────────────────────────────────────
+// ------- Cultivo -------
 export interface Cultivo {
   id: number
   nombre: string
@@ -72,7 +72,7 @@ export interface Cultivo {
   nombreTipoCultivo?: string
 }
 
-// ─── Siembra (cultivo activo en finca) ───────────────────────────────────────
+// ------- Siembra (cultivo activo en finca) -------
 export interface Siembra {
   idSiembra: number
   idFinca: number
@@ -93,7 +93,7 @@ export interface SiembraRequest {
   idUbicacion: number
 }
 
-// ─── Tarea ────────────────────────────────────────────────────────────────────
+// ------- Tarea -------
 export type EstadoTarea = 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADA'
 
 export interface EjecucionTarea {
@@ -127,7 +127,7 @@ export interface ActualizarEstadoTareaRequest {
   estado: EstadoTarea
 }
 
-// ─── Anomalía ─────────────────────────────────────────────────────────────────
+// ------- Anomalía -------
 export type TipoAnomalia  = 'PLAGA' | 'ENFERMEDAD' | 'CLIMATICA' | 'OTRA'
 export type EstadoAnomalia = 'ACTIVA' | 'EN_SEGUIMIENTO' | 'RESUELTA'
 export type NivelSeveridad = 'BAJA' | 'MEDIA' | 'ALTA' | 'CRITICA'
@@ -150,7 +150,7 @@ export interface AnomaliaRequest {
   idSiembra: number
 }
 
-// ─── Recomendación ────────────────────────────────────────────────────────────
+// ------- Recomendación -------
 export type EstadoRecomendacion  = 'PENDIENTE' | 'APLICADA' | 'IGNORADA'
 export type PrioridadRecomendacion = 'BAJA' | 'MEDIA' | 'ALTA'
 
@@ -169,7 +169,7 @@ export interface RecomendacionRequest {
   idSiembra?: number
 }
 
-// ─── Clima ────────────────────────────────────────────────────────────────────
+// ------- Clima -------
 export interface ClimaActual {
   temperatura: number
   humedad: number
@@ -187,7 +187,7 @@ export interface PronosticoClima {
   probabilidadLluvia: number
 }
 
-// ─── Finanza ──────────────────────────────────────────────────────────────────
+// ------- Finanza -------
 export type TipoTransaccion = 'INGRESO' | 'GASTO'
 
 export interface Finanza {
@@ -209,7 +209,7 @@ export interface FinanzaRequest {
   idFinca: number
 }
 
-// ─── Notificación ─────────────────────────────────────────────────────────────
+// ------- Notificación -------
 export type TipoNotificacion     = 'ANOMALIA' | 'CLIMA' | 'RECOMENDACION' | 'REPORTE' | 'RECORDATORIO'
 export type EstadoNotificacion   = 'LEIDA' | 'NO_LEIDA'
 export type PrioridadNotificacion = 'BAJA' | 'MEDIA' | 'ALTA'
@@ -224,7 +224,7 @@ export interface Notificacion {
   fechaCreacion: string
 }
 
-// ─── Reporte ──────────────────────────────────────────────────────────────────
+// ------- Reporte -------
 export type PeriodoReporte = 'DIARIO' | 'SEMANAL' | 'MENSUAL' | 'ANUAL'
 export type FormatoReporte = 'PDF' | 'EXCEL'
 
@@ -237,14 +237,14 @@ export interface Reporte {
   urlDescarga?: string
 }
 
-// ─── Ubicación ────────────────────────────────────────────────────────────────
+// ------- Ubicación -------
 export interface Ubicacion {
   idUbicacion: number
   municipio: string
   departamento: string
 }
 
-// ─── Respuesta paginada genérica ──────────────────────────────────────────────
+// ------- Respuesta paginada genérica -------
 export interface PaginatedResponse<T> {
   content: T[]
   totalElements: number
@@ -253,7 +253,7 @@ export interface PaginatedResponse<T> {
   number: number
 }
 
-// ─── Error de API ─────────────────────────────────────────────────────────────
+// ------- Error de API -------
 export interface ApiError {
   mensaje: string
   status: number

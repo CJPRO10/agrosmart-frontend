@@ -1,4 +1,4 @@
-// ─── Store de Finca activa ────────────────────────────────────────────────────
+// ------- Store de Finca activa -------
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Finca } from '@/types'

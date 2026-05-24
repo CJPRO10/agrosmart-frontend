@@ -1,6 +1,6 @@
 {
-  "name": "AgroMagdalena",
-  "short_name": "AgroMagdalena",
+  "name": "AgroSmart",
+  "short_name": "AgroSmart",
   "description": "Plataforma Digital de Agricultura Inteligente para Pequeños Productores del Magdalena",
   "start_url": "/",
   "display": "standalone",

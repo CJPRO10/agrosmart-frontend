@@ -118,7 +118,7 @@ export default function CultivosPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Cultivos</h1>
@@ -127,7 +127,7 @@ export default function CultivosPage() {
           </p>
         </div>
         <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
-          {/* Filtro por finca */}
+          {/* ------- Filtro por finca ------- */}
           <select
             value={filtroFinca}
             onChange={e => setFiltroFinca(Number(e.target.value))}
@@ -144,7 +144,7 @@ export default function CultivosPage() {
         </div>
       </div>
 
-      {/* Error */}
+      {/* ------- Error ------- */}
       {error && (
         <div className="animate-fade-in" style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem' }}>
           <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
@@ -153,14 +153,14 @@ export default function CultivosPage() {
         </div>
       )}
 
-      {/* Loading */}
+      {/* ------- Loading ------- */}
       {loading && (
         <div style={{ display:'flex', justifyContent:'center', padding:'80px 0' }}>
           <span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>progress_activity</span>
         </div>
       )}
 
-      {/* Sin cultivos */}
+      {/* ------- Sin cultivos ------- */}
       {!loading && siembrasFiltradas.length === 0 && !error && (
         <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'64px 24px', textAlign:'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'56px', color:'var(--color-primary-fixed)', marginBottom:'16px' }}>potted_plant</span>
@@ -175,13 +175,13 @@ export default function CultivosPage() {
         </div>
       )}
 
-      {/* Grid cultivos */}
+      {/* ------- Grid cultivos ------- */}
       {!loading && siembrasFiltradas.length > 0 && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'1rem' }}>
           {siembrasFiltradas.map(s => (
             <div key={s.idSiembra} className="card" style={{ display:'flex', flexDirection:'column', gap:'1rem', position:'relative', overflow:'hidden' }}>
 
-              {/* Badge estado */}
+              {/* ------- Badge estado ------- */}
               <div style={{ position:'absolute', top:'16px', right:'16px' }}>
                 <span style={{
                   padding:'3px 10px', borderRadius:'9999px', fontSize:'11px', fontWeight:700,
@@ -191,7 +191,7 @@ export default function CultivosPage() {
                 }}>{s.nombreEstado}</span>
               </div>
 
-              {/* Icono + nombre */}
+              {/* ------- Icono + nombre ------- */}
               <div style={{ display:'flex', alignItems:'center', gap:'12px', paddingRight:'80px' }}>
                 <div style={{ width:'44px', height:'44px', borderRadius:'10px', flexShrink:0, backgroundColor:'var(--color-primary-fixed)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <span className="material-symbols-outlined" style={{ fontSize:'22px', color:'var(--color-primary)' }}>potted_plant</span>
@@ -204,7 +204,7 @@ export default function CultivosPage() {
                 </div>
               </div>
 
-              {/* Fechas */}
+              {/* ------- Fechas ------- */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
                 <div style={{ backgroundColor:'var(--color-surface-container-low)', borderRadius:'8px', padding:'10px' }}>
                   <p style={{ fontSize:'0.7rem', color:'var(--color-on-surface-variant)', margin:'0 0 2px' }}>Siembra</p>
@@ -220,7 +220,7 @@ export default function CultivosPage() {
                 </div>
               </div>
 
-              {/* Acciones */}
+              {/* ------- Acciones ------- */}
               <div style={{ display:'flex', gap:'8px', paddingTop:'8px', borderTop:'1px solid var(--color-outline-variant)' }}>
                 <button
                   onClick={() => { setForm({ idFinca: fincas.find(f=>f.nombreFinca===s.nombreFinca)?.idFinca ?? 0, idCultivo: cultivos.find(c=>c.nombre===s.nombreCultivo)?.idCultivo ?? 0, idEstadoCultivo: estados.find(e=>e.nombre===s.nombreEstado)?.idEstadoCultivo ?? 1, fechaEstado: s.fechaEstado?.slice(0,16) ?? '', numLote: s.numLote }); setSiembraActiva(s); setModalMode('editar') }}
@@ -244,7 +244,7 @@ export default function CultivosPage() {
         </div>
       )}
 
-      {/* Modal crear/editar */}
+      {/* ------- Modal crear/editar ------- */}
       {modalMode && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'480px' }}>
@@ -307,7 +307,7 @@ export default function CultivosPage() {
         </div>
       )}
 
-      {/* Modal confirmar eliminación */}
+      {/* ------- Modal confirmar eliminación ------- */}
       {confirmDelete && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'360px', textAlign:'center' }}>

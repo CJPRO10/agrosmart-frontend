@@ -95,7 +95,7 @@ export default function RecomendacionesPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Consejos y Recomendaciones</h1>
@@ -109,7 +109,7 @@ export default function RecomendacionesPage() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* ------- Stats ------- */}
       {recomendaciones.length > 0 && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px,1fr))', gap:'12px' }}>
           {[
@@ -127,7 +127,7 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* Filtros */}
+      {/* ------- Filtros ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', alignItems:'center' }}>
         <div style={{ position:'relative', flex:1, minWidth:'200px' }}>
           <span className="material-symbols-outlined" style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)' }}>search</span>
@@ -143,7 +143,7 @@ export default function RecomendacionesPage() {
         ))}
       </div>
 
-      {/* Error */}
+      {/* ------- Error ------- */}
       {error && (
         <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem' }}>
           <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
@@ -171,7 +171,7 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* Lista */}
+      {/* ------- Lista ------- */}
       {!loading && filtradas.length > 0 && (
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
           {filtradas.map(r => {
@@ -218,7 +218,7 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* Modal solicitar */}
+      {/* ------- Modal solicitar ------- */}
       {modalOpen && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'480px' }}>

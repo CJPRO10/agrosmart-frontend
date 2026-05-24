@@ -1,4 +1,4 @@
-// ─── Store de UI (sidebar, notificaciones, offline) ──────────────────────────
+// ------- Store de UI (sidebar, notificaciones, offline) -------
 import { create } from 'zustand'
 
 interface UIState {

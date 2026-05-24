@@ -19,7 +19,7 @@ export default function InicioPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* Encabezado */}
+      {/* -------Encabezado -------*/}
       <div>
         <p style={{ fontSize:'0.875rem', color:'var(--color-on-surface-variant)', margin:0 }}>
           {saludo}, {nombre}
@@ -32,7 +32,7 @@ export default function InicioPage() {
         </p>
       </div>
 
-      {/* Cards resumen */}
+      {/* ------- Cards resumen -------*/}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'1rem' }}>
         {cards.map(card => (
           <div key={card.label} className="card" style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -49,7 +49,7 @@ export default function InicioPage() {
         ))}
       </div>
 
-      {/* Bienvenida */}
+      {/* ------- Bienvenida -------*/}
       <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'64px 24px', textAlign:'center' }}>
         <span className="material-symbols-outlined" style={{ fontSize:'56px', color:'var(--color-primary-fixed)', marginBottom:'16px' }}>
           agriculture

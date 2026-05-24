@@ -1,4 +1,4 @@
-// ─── Hook de autenticación ────────────────────────────────────────────────────
+// -------Hook de autenticación -------
 'use client'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'

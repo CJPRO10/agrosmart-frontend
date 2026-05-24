@@ -114,7 +114,7 @@ export default function MiFincaPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* ── Encabezado ─────────────────────────────────────────────────────── */}
+      {/* ------- Encabezado ------- */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Fincas</h1>
@@ -128,7 +128,7 @@ export default function MiFincaPage() {
         </button>
       </div>
 
-      {/* ── Error ──────────────────────────────────────────────────────────── */}
+      {/* ------- Error ------- */}
       {error && (
         <div className="animate-fade-in" style={{
           display:'flex', alignItems:'center', gap:'8px',
@@ -144,7 +144,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ── Loading ────────────────────────────────────────────────────────── */}
+      {/* ------- Loading ------- */}
       {loading && (
         <div style={{ display:'flex', justifyContent:'center', alignItems:'center', padding:'80px 0' }}>
           <span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>
@@ -153,7 +153,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ── Sin fincas ─────────────────────────────────────────────────────── */}
+      {/* ------- Sin fincas ------- */}
       {!loading && fincas.length === 0 && !error && (
         <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'64px 24px', textAlign:'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'56px', color:'var(--color-primary-fixed)', marginBottom:'16px' }}>home</span>
@@ -170,13 +170,13 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ── Grid de fincas ─────────────────────────────────────────────────── */}
+      {/* ------- Grid de fincas ------- */}
       {!loading && fincas.length > 0 && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:'1rem' }}>
           {fincas.map((finca) => (
             <div key={finca.idFinca} className="card" style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
-              {/* Header */}
+              {/* ------- Header ------- */}
               <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                 <div style={{
                   width:'44px', height:'44px', borderRadius:'10px', flexShrink:0,
@@ -196,7 +196,7 @@ export default function MiFincaPage() {
                 </div>
               </div>
 
-              {/* Stats */}
+              {/* ------- Stats -------*/}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
                 {[
                   { label: 'Hectáreas', value: finca.hectareas, icon: 'straighten' },
@@ -212,7 +212,7 @@ export default function MiFincaPage() {
                 ))}
               </div>
 
-              {/* Fecha */}
+              {/* ------- Fecha -------*/}
               {finca.fechaRegistro && (
                 <p style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'4px', margin:0 }}>
                   <span className="material-symbols-outlined" style={{fontSize:'14px'}}>calendar_today</span>
@@ -220,7 +220,7 @@ export default function MiFincaPage() {
                 </p>
               )}
 
-              {/* Acciones */}
+              {/* ------- Acciones -------*/}
               <div style={{ display:'flex', gap:'8px', paddingTop:'12px', borderTop:`1px solid var(--color-outline-variant)` }}>
                 <button onClick={() => abrirEditar(finca)} style={{
                   flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'4px',
@@ -248,7 +248,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ── Modal Crear / Editar ────────────────────────────────────────────── */}
+      {/* ------- Modal Crear / Editar ------- */}
       {modalMode && (
         <div style={{
           position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
@@ -316,7 +316,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ── Modal confirmar eliminación ─────────────────────────────────────── */}
+      {/* ------- Modal confirmar eliminación ------- */}
       {confirmDelete && (
         <div style={{
           position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
