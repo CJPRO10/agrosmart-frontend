@@ -108,9 +108,6 @@ export default function MiFincaPage() {
     }
   }
 
-  const getNombreUbicacion = (id: number) =>
-    UBICACIONES.find((u) => u.id === id)?.nombre ?? 'Sin ubicación'
-
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
@@ -191,7 +188,7 @@ export default function MiFincaPage() {
                   </h3>
                   <p style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'2px', margin:0 }}>
                     <span className="material-symbols-outlined" style={{fontSize:'14px'}}>location_on</span>
-                    {getNombreUbicacion(finca.idUbicacion)}
+                    {finca.nombreUbicacion ?? 'Sin ubicación'}
                   </p>
                 </div>
               </div>

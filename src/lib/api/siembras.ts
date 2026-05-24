@@ -18,6 +18,18 @@ export interface SiembraRequest {
   numLote: number
 }
 
+// Solo los campos que acepta SiembraUpdateRequestDTO
+export interface SiembraUpdateRequest {
+  idFinca: number
+  idCultivo: number
+  numLote: number
+}
+
+export interface SiembraEstadoRequest {
+  idSiembra: number
+  idEstadoCultivo: number
+}
+
 export interface CultivoResponse {
   idCultivo: number
   nombre: string
@@ -40,20 +52,36 @@ export const siembrasApi = {
     const res = await apiClient.get<SiembraResponse[]>('/siembras')
     return res.data
   },
+
   listarPorFinca: async (idFinca: number): Promise<SiembraResponse[]> => {
     const res = await apiClient.get<SiembraResponse[]>(`/siembras/finca/${idFinca}`)
     return res.data
   },
+
+  // El endpoint real es /siembras/crear según Postman
   crear: async (data: SiembraRequest): Promise<SiembraResponse> => {
-    const res = await apiClient.post<SiembraResponse>('/siembras', data)
-    return res.data
+  const res = await apiClient.post<SiembraResponse>('/siembras', data)
+  return res.data
   },
-  actualizar: async (id: number, data: Partial<SiembraRequest>): Promise<SiembraResponse> => {
+  // Solo envía los campos del SiembraUpdateRequestDTO
+  actualizar: async (id: number, data: SiembraUpdateRequest): Promise<SiembraResponse> => {
     const res = await apiClient.put<SiembraResponse>(`/siembras/${id}`, data)
     return res.data
   },
+
   eliminar: async (id: number): Promise<void> => {
     await apiClient.delete(`/siembras/${id}`)
+  },
+
+  // Cambiar estado de la siembra (endpoint separado)
+  cambiarEstado: async (data: SiembraEstadoRequest): Promise<void> => {
+    await apiClient.post('/siembras-estados', data)
+  },
+
+  // Obtener estado actual de una siembra
+  estadoActual: async (idSiembra: number): Promise<EstadoCultivo> => {
+    const res = await apiClient.get<EstadoCultivo>(`/siembras-estados/siembra/${idSiembra}/actual`)
+    return res.data
   },
 }
 

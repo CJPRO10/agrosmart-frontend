@@ -1,10 +1,10 @@
 import apiClient from './client'
-import type {
-  Tarea,
-  TareaRequest,
-  AsignarTareaRequest,
-  ActualizarEstadoTareaRequest,
-} from '@/types'
+import type { Tarea, TareaRequest, ActualizarEstadoTareaRequest } from '@/types'
+
+export interface AsignarTareaRequest {
+  idOperario?: number
+  idAuxiliar?: number
+}
 
 export const tareasApi = {
   listar: async (): Promise<Tarea[]> => {
@@ -27,11 +27,13 @@ export const tareasApi = {
     return res.data
   },
 
+  // Body: { idOperario: number } o { idAuxiliar: number }
   asignar: async (idTarea: number, data: AsignarTareaRequest): Promise<Tarea> => {
     const res = await apiClient.post<Tarea>(`/tareas/${idTarea}/asignar`, data)
     return res.data
   },
 
+  // PATCH /api/tareas/ejecucion/{idEjecucion}/estado
   actualizarEstado: async (
     idEjecucion: number,
     data: ActualizarEstadoTareaRequest

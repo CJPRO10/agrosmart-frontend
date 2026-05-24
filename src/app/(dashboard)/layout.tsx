@@ -6,18 +6,43 @@ import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
 import { useUIStore } from '@/store/uiStore'
 import { useOfflineStatus } from '@/hooks/useOfflineStatus'
+import { useRoleGuard } from '@/hooks/useRoleGuard'
+import type { Rol } from '@/types'
 
-const NAV_ITEMS = [
-  { label: 'Inicio',            icon: 'dashboard',      href: '/inicio' },
-  { label: 'Mi Finca',          icon: 'home',           href: '/mi-finca' },
-  { label: 'Mis Cultivos',      icon: 'potted_plant',   href: '/cultivos' },
-  { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas' },
-  { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',        sep: true },
-  { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones' },
-  { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima' },
-  { label: 'Mis Finanzas',      icon: 'payments',       href: '/finanzas' },
-  { label: 'Reportes',          icon: 'bar_chart',      href: '/reportes',         sep: true },
-]
+// Navegación por rol
+const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?: boolean }[]> = {
+  PRODUCTOR: [
+    { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
+    { label: 'Mi Finca',          icon: 'home',           href: '/mi-finca'         },
+    { label: 'Personal',          icon: 'group',          href: '/personal'         },
+    { label: 'Mis Cultivos',      icon: 'potted_plant',   href: '/cultivos'         },
+    { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas'           },
+    { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
+    { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
+    { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
+    { label: 'Mis Finanzas',      icon: 'payments',       href: '/finanzas'         },
+    { label: 'Reportes',          icon: 'bar_chart',      href: '/reportes',    sep: true },
+  ],
+  OPERARIO: [
+    { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
+    { label: 'Mis Cultivos',      icon: 'potted_plant',   href: '/cultivos'         },
+    { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas'           },
+    { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
+    { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
+    { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
+  ],
+  AUXILIAR: [
+    { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
+    { label: 'Mis Cultivos',      icon: 'potted_plant',   href: '/cultivos'         },
+    { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas'           },
+    { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
+    { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
+  ],
+  ADMINISTRADOR: [
+    { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
+    { label: 'Usuarios',          icon: 'manage_accounts', href: '/usuarios'        },
+  ],
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter()
@@ -25,12 +50,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, isAuthenticated, logout } = useAuthStore()
   const { sidebarOpen, notificacionesCount, toggleSidebar } = useUIStore()
   const isOnline = useOfflineStatus()
+  useRoleGuard(pathname)
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/login')
   }, [isAuthenticated, router])
 
   if (!isAuthenticated || !user) return null
+
+  const rol = user.rol as Rol
+  const navItems = NAV_BY_ROL[rol] ?? NAV_BY_ROL['OPERARIO']
 
   const initials = (
     (user.nombreCompleto?.split(' ')[0]?.[0] ?? '') +
@@ -39,10 +68,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const sidebarW = sidebarOpen ? '256px' : '64px'
 
+  const ROL_LABEL: Record<string, string> = {
+    PRODUCTOR:    'Productor Agrícola',
+    OPERARIO:     'Operario',
+    AUXILIAR:     'Auxiliar',
+    ADMINISTRADOR:'Administrador',
+  }
+
+  const ROL_COLOR: Record<string, string> = {
+    PRODUCTOR:    'var(--color-primary)',
+    OPERARIO:     'var(--color-secondary)',
+    AUXILIAR:     'var(--color-tertiary)',
+    ADMINISTRADOR:'var(--color-error)',
+  }
+
   return (
     <div style={{ minHeight:'100vh', backgroundColor:'var(--color-background)', display:'flex' }}>
 
-      {/* ------- Sidebar ------- */}
+      {/* Sidebar */}
       <aside style={{
         position:'fixed', left:0, top:0, height:'100%', zIndex:50,
         width: sidebarW, transition:'width 0.3s',
@@ -53,13 +96,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}>
         {/* Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
-          <span className="material-symbols-outlined" style={{ color:'var(--color-primary)', fontSize:'28px', flexShrink:0 }}>
-            potted_plant
-          </span>
+          <span className="material-symbols-outlined" style={{ color:'var(--color-primary)', fontSize:'28px', flexShrink:0 }}>potted_plant</span>
           {sidebarOpen && (
-            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>
-              AgroMagdalena
-            </span>
+            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroMagdalena</span>
           )}
         </div>
 
@@ -81,16 +120,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p style={{ fontWeight:600, fontSize:'0.875rem', color:'var(--color-on-surface)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                 {user.nombreCompleto}
               </p>
-              <p style={{ fontSize:'0.65rem', color:'var(--color-on-surface-variant)', margin:0, textTransform:'uppercase', letterSpacing:'0.05em' }}>
-                {user.rol}
-              </p>
+              <span style={{ fontSize:'0.65rem', fontWeight:700, color: ROL_COLOR[rol] ?? 'var(--color-primary)', textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                {ROL_LABEL[rol] ?? rol}
+              </span>
             </div>
           </div>
         )}
 
         {/* Nav */}
         <nav style={{ flex:1, display:'flex', flexDirection:'column', gap:'2px', overflowY:'auto' }}>
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <div key={item.href}>
@@ -99,7 +138,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   display:'flex', alignItems:'center', gap:'12px',
                   padding: sidebarOpen ? '10px 16px' : '10px',
                   justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                  borderRadius:'8px', textDecoration:'none', fontSize:'0.875rem', fontWeight: active ? 600 : 500,
+                  borderRadius:'8px', textDecoration:'none', fontSize:'0.875rem',
+                  fontWeight: active ? 600 : 500,
                   color: active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
                   backgroundColor: active ? 'var(--color-surface-container)' : 'transparent',
                   borderRight: active ? `3px solid var(--color-primary)` : '3px solid transparent',
@@ -113,7 +153,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* Footer sidebar */}
+        {/* Footer */}
         <div style={{ paddingTop:'16px', borderTop:`1px solid var(--color-outline-variant)`, display:'flex', flexDirection:'column', gap:'2px' }}>
           <Link href="/perfil" style={{
             display:'flex', alignItems:'center', gap:'12px',
@@ -138,7 +178,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* ------- Área principal ------- */}
+      {/* Área principal */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft:sidebarW, transition:'margin-left 0.3s' }}>
 
         {/* Topbar */}
@@ -184,6 +224,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </span>
               )}
             </Link>
+
+            {/* Badge rol en topbar */}
+            <span style={{
+              padding:'4px 10px', borderRadius:'9999px', fontSize:'0.7rem', fontWeight:700,
+              backgroundColor:'var(--color-surface-container)',
+              color: ROL_COLOR[rol] ?? 'var(--color-primary)',
+              border:`1px solid ${ROL_COLOR[rol] ?? 'var(--color-primary)'}`,
+              display: sidebarOpen ? 'none' : 'inline-flex'
+            }}>
+              {ROL_LABEL[rol]?.split(' ')[0] ?? rol}
+            </span>
+
             <Link href="/perfil" style={{
               width:'36px', height:'36px', borderRadius:'9999px',
               backgroundColor:'var(--color-primary-fixed)',
@@ -196,13 +248,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* ------- Contenido ------- */}
+        {/* Contenido */}
         <main style={{ flex:1, padding:'24px' }}>
           {children}
         </main>
       </div>
 
-      {/* ------- Banner offline ------- */}
+      {/* Banner offline */}
       {!isOnline && (
         <div style={{
           position:'fixed', bottom:0, left:0, right:0, zIndex:50,

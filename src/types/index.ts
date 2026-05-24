@@ -52,8 +52,8 @@ export interface Finca {
   nombreFinca: string
   hectareas: number
   numLotes: number
-  idUbicacion: number
-  nombreUbicacion?: string
+  nombreUbicacion: string   
+  idUbicacion: number      
   fechaRegistro?: string
 }
 
