@@ -30,6 +30,8 @@ export default function RecomendacionesPage() {
   const [modalOpen, setModalOpen]             = useState(false)
   const [saving, setSaving]                   = useState(false)
   const [filtroEstado, setFiltroEstado]       = useState<string>('TODAS')
+  const [filtroPrioridad, setFiltroPrioridad] = useState<string>('TODAS')
+  const [filtroCategoria, setFiltroCategoria] = useState<string>('TODAS')
   const [busqueda, setBusqueda]               = useState('')
   const [form, setForm]                       = useState<RecomendacionRequest>(FORM_INICIAL)
 
@@ -56,9 +58,11 @@ export default function RecomendacionesPage() {
   }
 
   const filtradas = recomendaciones.filter(r => {
-    const matchEstado   = filtroEstado === 'TODAS' || r.estado === filtroEstado
-    const matchBusqueda = !busqueda || r.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) || r.categoria?.toLowerCase().includes(busqueda.toLowerCase())
-    return matchEstado && matchBusqueda
+    const matchEstado     = filtroEstado === 'TODAS'     || r.estado === filtroEstado
+    const matchPrioridad  = filtroPrioridad === 'TODAS'  || r.prioridad === filtroPrioridad
+    const matchCategoria  = filtroCategoria === 'TODAS'  || r.categoria === filtroCategoria
+    const matchBusqueda   = !busqueda || r.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) || r.categoria?.toLowerCase().includes(busqueda.toLowerCase())
+    return matchEstado && matchPrioridad && matchCategoria && matchBusqueda
   })
 
   const aplicadas  = recomendaciones.filter(r => r.estado === 'APLICADA').length
@@ -95,7 +99,7 @@ export default function RecomendacionesPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* ------- Encabezado ------- */}
+      {/* Encabezado */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Consejos y Recomendaciones</h1>
@@ -109,7 +113,7 @@ export default function RecomendacionesPage() {
         </button>
       </div>
 
-      {/* ------- Stats ------- */}
+      {/* Stats */}
       {recomendaciones.length > 0 && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px,1fr))', gap:'12px' }}>
           {[
@@ -127,23 +131,52 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* ------- Filtros ------- */}
-      <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', alignItems:'center' }}>
-        <div style={{ position:'relative', flex:1, minWidth:'200px' }}>
+      {/* Filtros RF14 */}
+      <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+        {/* Búsqueda */}
+        <div style={{ position:'relative' }}>
           <span className="material-symbols-outlined" style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)' }}>search</span>
-          <input type="text" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar recomendación..." className="input-field" style={{ paddingLeft:'40px', minHeight:'40px' }} />
+          <input type="text" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar recomendación..." className="input-field" style={{ paddingLeft:'40px' }} />
         </div>
-        {(['TODAS','PENDIENTE','APLICADA','IGNORADA']).map(est => (
-          <button key={est} onClick={() => setFiltroEstado(est)}
-            style={{ padding:'8px 14px', borderRadius:'9999px', border:'none', cursor:'pointer', fontSize:'0.8rem', fontWeight:500,
-              backgroundColor: filtroEstado === est ? 'var(--color-primary)' : 'var(--color-surface-container)',
-              color: filtroEstado === est ? 'white' : 'var(--color-on-surface-variant)' }}>
-            {est === 'TODAS' ? 'Todas' : ESTADO_CONFIG[est]?.label ?? est}
-          </button>
-        ))}
+        {/* Filtros */}
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'6px', alignItems:'center' }}>
+          {/* Estado */}
+          {(['TODAS','PENDIENTE','APLICADA','IGNORADA']).map(est => (
+            <button key={est} onClick={() => setFiltroEstado(est)}
+              style={{ padding:'6px 14px', borderRadius:'9999px', border:'none', cursor:'pointer', fontSize:'0.8rem', fontWeight:500,
+                backgroundColor: filtroEstado === est ? 'var(--color-primary)' : 'var(--color-surface-container)',
+                color: filtroEstado === est ? 'white' : 'var(--color-on-surface-variant)' }}>
+              {est === 'TODAS' ? 'Estado' : ESTADO_CONFIG[est]?.label ?? est}
+            </button>
+          ))}
+          <div style={{ width:'1px', height:'20px', backgroundColor:'var(--color-outline-variant)' }} />
+          {/* Prioridad */}
+          {(['TODAS','ALTA','MEDIA','BAJA']).map(p => (
+            <button key={p} onClick={() => setFiltroPrioridad(p)}
+              style={{ padding:'6px 14px', borderRadius:'9999px', border:'none', cursor:'pointer', fontSize:'0.8rem', fontWeight:500,
+                backgroundColor: filtroPrioridad === p ? (p === 'TODAS' ? 'var(--color-primary)' : (PRIORIDAD_CONFIG[p]?.bg ?? 'var(--color-surface-container)')) : 'var(--color-surface-container)',
+                color: filtroPrioridad === p ? (p === 'TODAS' ? 'white' : (PRIORIDAD_CONFIG[p]?.color ?? 'var(--color-on-surface-variant)')) : 'var(--color-on-surface-variant)' }}>
+              {p === 'TODAS' ? 'Prioridad' : p}
+            </button>
+          ))}
+          <div style={{ width:'1px', height:'20px', backgroundColor:'var(--color-outline-variant)' }} />
+          {/* Categoría */}
+          <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}
+            className="input-field" style={{ minHeight:'36px', padding:'4px 12px', width:'auto' }}>
+            <option value="TODAS">Categoría</option>
+            {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {/* Limpiar */}
+          {(filtroEstado !== 'TODAS' || filtroPrioridad !== 'TODAS' || filtroCategoria !== 'TODAS' || busqueda) && (
+            <button onClick={() => { setFiltroEstado('TODAS'); setFiltroPrioridad('TODAS'); setFiltroCategoria('TODAS'); setBusqueda('') }}
+              style={{ padding:'6px 12px', borderRadius:'9999px', border:'1px solid var(--color-outline-variant)', cursor:'pointer', fontSize:'0.8rem', backgroundColor:'transparent', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'4px' }}>
+              <span className="material-symbols-outlined" style={{fontSize:'14px'}}>filter_alt_off</span> Limpiar
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ------- Error ------- */}
+      {/* Error */}
       {error && (
         <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'8px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem' }}>
           <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
@@ -171,7 +204,7 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* ------- Lista ------- */}
+      {/* Lista */}
       {!loading && filtradas.length > 0 && (
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
           {filtradas.map(r => {
@@ -218,7 +251,7 @@ export default function RecomendacionesPage() {
         </div>
       )}
 
-      {/* ------- Modal solicitar ------- */}
+      {/* Modal solicitar */}
       {modalOpen && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
           <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'480px' }}>

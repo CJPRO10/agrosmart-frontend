@@ -22,6 +22,7 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
     { label: 'Mis Finanzas',      icon: 'payments',       href: '/finanzas'         },
     { label: 'Reportes',          icon: 'bar_chart',      href: '/reportes',    sep: true },
+    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   OPERARIO: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
@@ -30,6 +31,7 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
     { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
     { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
+    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   AUXILIAR: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
@@ -37,10 +39,12 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas'           },
     { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
     { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
+    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   ADMINISTRADOR: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
     { label: 'Usuarios',          icon: 'manage_accounts', href: '/usuarios'        },
+    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
 }
 
@@ -98,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
           <span className="material-symbols-outlined" style={{ color:'var(--color-primary)', fontSize:'28px', flexShrink:0 }}>potted_plant</span>
           {sidebarOpen && (
-            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroMagdalena</span>
+            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroSmart</span>
           )}
         </div>
 

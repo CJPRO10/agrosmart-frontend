@@ -23,7 +23,7 @@ const RUTAS_POR_ROL: Record<string, string[]> = {
 // Rutas públicas (sin auth)
 const RUTAS_PUBLICAS = ['/login', '/registro']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Permitir rutas públicas y archivos estáticos

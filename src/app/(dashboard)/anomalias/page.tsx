@@ -58,6 +58,7 @@ export default function AnomaliasPage() {
   const [confirmDelete, setConfirmDelete] = useState<AnomaliaBackend | null>(null)
   const [filtroEstado, setFiltroEstado]   = useState<EstadoAnomalia | 'TODAS'>('TODAS')
   const [busqueda, setBusqueda]           = useState('')
+  const [success, setSuccess] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>(FORM_INICIAL)
 
   useEffect(() => {
@@ -99,13 +100,22 @@ export default function AnomaliasPage() {
     if (!form.idSiembra) { setError('Selecciona un cultivo.'); return }
     setSaving(true)
     try {
-      const req = { ...form, idSiembra: form.idSiembra, fechaDeteccion: new Date(form.fechaDeteccion).toISOString() }
-      if (editando) { await anomaliasApi.actualizar(editando.idAnomalia, req as never) }
-      else          { await anomaliasApi.crear(req as never) }
-      setModalOpen(false); setEditando(null)
+      if (editando) {
+        await anomaliasApi.actualizar(editando.idAnomalia, form as never)
+      } else {
+        await anomaliasApi.crear(form as never)
+      }
+      setModalOpen(false)
+      setEditando(null)
       await recargar()
-    } catch { setError('Error al guardar la anomalía.') }
-    finally { setSaving(false) }
+      // RF33/34 — informar que se generó recomendación y alerta automáticamente
+      setSuccess('Anomalía guardada. Se generó una recomendación y alerta automáticamente.')
+      setTimeout(() => setSuccess(null), 5000)
+    } catch {
+      setError('Error al guardar la anomalía.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleEliminar = async (a: AnomaliaBackend) => {
@@ -171,6 +181,21 @@ export default function AnomaliasPage() {
         <span style={{flex:1}}>{error}</span>
         <button onClick={()=>setError(null)}><span className="material-symbols-outlined" style={{fontSize:'18px'}}>close</span></button>
       </div>}
+
+      {success && (
+        <div className="animate-fade-in" style={{
+          display:'flex', alignItems:'center', gap:'8px',
+          padding:'12px 16px', borderRadius:'8px',
+          backgroundColor:'var(--color-primary-fixed)',
+          color:'var(--color-primary)', fontSize:'0.875rem'
+        }}>
+          <span className="material-symbols-outlined" style={{fontSize:'20px'}}>check_circle</span>
+          <span style={{flex:1}}>{success}</span>
+          <button onClick={() => setSuccess(null)}>
+            <span className="material-symbols-outlined" style={{fontSize:'18px'}}>close</span>
+          </button>
+        </div>
+      )}
 
       {loading && <div style={{ display:'flex', justifyContent:'center', padding:'80px 0' }}><span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>progress_activity</span></div>}
 
