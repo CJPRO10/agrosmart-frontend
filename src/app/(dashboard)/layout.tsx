@@ -103,11 +103,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside style={{
         position:'fixed', left:0, top:0, height:'100%', zIndex:50,
         width: isMobile ? (sidebarOpen ? '280px' : '0px') : sidebarW,
+        minWidth: 0,
         transition:'width 0.3s', overflow:'hidden',
-        display:'flex', flexDirection:'column', padding:'24px 16px',
+        display:'flex', flexDirection:'column',
+        padding: (isMobile && !sidebarOpen) ? '0' : '24px 16px',
         backgroundColor:'var(--color-surface-container-lowest)',
-        borderRight:`1px solid var(--color-outline-variant)`,
-        boxShadow:'2px 0 8px rgba(0,0,0,0.05)'
+        borderRight: (isMobile && !sidebarOpen) ? 'none' : `1px solid var(--color-outline-variant)`,
+        boxShadow: (isMobile && !sidebarOpen) ? 'none' : '2px 0 8px rgba(0,0,0,0.05)'
       }}>
         {/* Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
@@ -194,7 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Área principal */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft: isMobile ? '0px' : sidebarW, transition:'margin-left 0.3s', minWidth:0 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft: isMobile ? '0' : sidebarW, transition:'margin-left 0.3s', minWidth:0, width: isMobile ? '100%' : `calc(100% - ${sidebarW})` }}>
 
         {/* Topbar */}
         <header style={{
