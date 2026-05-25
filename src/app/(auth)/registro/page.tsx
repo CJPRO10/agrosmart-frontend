@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useAuth } from '@/hooks/useAuth'
 import { ubicacionesApi } from '@/lib/api/ubicaciones'
 import type { RegistroProductorRequest } from '@/types'
+import { extraerMensajeError } from '@/lib/utils/errorHandler'
 
 const MapaPicker = dynamic(() => import('@/components/MapaPicker'), { ssr: false })
 
@@ -79,10 +80,7 @@ export default function RegistroPage() {
       }
       await registrar(data)
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'mensaje' in err
-        ? (err as { mensaje: string }).mensaje
-        : 'Error al registrar. Intenta nuevamente.'
-      setError(msg)
+      setError(extraerMensajeError(err, 'Error al registrar. Intenta nuevamente.'))
     }
   }
 
