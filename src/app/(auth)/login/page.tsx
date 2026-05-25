@@ -31,10 +31,10 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'var(--color-background)' }}>
-      <div style={{ width:'100%', maxWidth:'1000px', display:'grid', gridTemplateColumns:'1fr 1fr', borderRadius:'20px', overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.12)', minHeight:'600px' }}>
+      <div style={{ width:'100%', maxWidth:'1000px', display:'grid', gridTemplateColumns:'minmax(0,1fr) minmax(300px,1fr)', borderRadius:'20px', overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.12)', minHeight:'600px' }}>
 
-        {/* Panel izquierdo — branding */}
-        <div style={{ position:'relative', display:'flex', flexDirection:'column', justifyContent:'space-between', padding:'48px', background:'linear-gradient(160deg, #1a4d1a 0%, #0d2e0d 100%)', overflow:'hidden' }}>
+        {/* Panel izquierdo — branding (oculto en móvil) */}
+        <div style={{ position:'relative', display:'flex', flexDirection:'column', justifyContent:'space-between', padding:'48px', background:'linear-gradient(160deg, #1a4d1a 0%, #0d2e0d 100%)', overflow:'hidden', minWidth:0 }}>
           {/* Imagen fondo */}
           <div style={{ position:'absolute', inset:0, backgroundImage:'url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&q=80")', backgroundSize:'cover', backgroundPosition:'center', opacity:0.2 }} />
           <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg, rgba(21,66,18,0.95) 0%, rgba(13,46,13,0.85) 100%)' }} />

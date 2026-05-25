@@ -104,14 +104,14 @@ export default function RegistroPage() {
     <div style={{ minHeight:'100vh', backgroundColor:'var(--color-background)' }}>
 
       {/* Header */}
-      <header style={{ position:'fixed', top:0, width:'100%', zIndex:50, backgroundColor:'white', borderBottom:'1px solid var(--color-outline-variant)', padding:'12px 24px', display:'flex', justifyContent:'space-between', alignItems:'center', boxSizing:'border-box' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize:'28px', color:'var(--color-primary)' }}>potted_plant</span>
-          <span style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--color-primary)' }}>AgroSmart</span>
+      <header style={{ position:'fixed', top:0, width:'100%', zIndex:50, backgroundColor:'white', borderBottom:'1px solid var(--color-outline-variant)', padding:'10px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', boxSizing:'border-box', gap:'8px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', flexShrink:0 }}>
+          <span className="material-symbols-outlined" style={{ fontSize:'24px', color:'var(--color-primary)' }}>potted_plant</span>
+          <span style={{ fontSize:'1rem', fontWeight:800, color:'var(--color-primary)' }}>AgroSmart</span>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <span style={{ fontSize:'0.875rem', color:'var(--color-on-surface-variant)' }}>¿Ya tienes cuenta?</span>
-          <Link href="/login" className="btn-primary" style={{ padding:'8px 20px', fontSize:'0.875rem', minHeight:'36px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'8px', flexShrink:0 }}>
+          <span style={{ fontSize:'0.8rem', color:'var(--color-on-surface-variant)', display:'none' }}>¿Ya tienes cuenta?</span>
+          <Link href="/login" className="btn-primary" style={{ padding:'8px 16px', fontSize:'0.8rem', minHeight:'36px', whiteSpace:'nowrap' }}>
             Iniciar Sesión
           </Link>
         </div>
@@ -176,7 +176,7 @@ export default function RegistroPage() {
 
             {/* ── PASO 1 ── */}
             {step === 1 && (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:'16px' }}>
                 <div>
                   <label style={labelStyle}>Nombre *</label>
                   <input name="nombre" type="text" value={step1.nombre} onChange={handleStep1Change}
