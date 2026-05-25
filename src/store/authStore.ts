@@ -1,14 +1,26 @@
-// -------Store de Autenticación (Zustand) -------
+// ─── Store de Autenticación (Zustand) ────────────────────────────────────────
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { LoginResponse, Rol } from '@/types'
 import { authApi } from '@/lib/api/auth'
 
+const TOKEN_KEY = 'agro_auth_token'
+
+// Sincroniza el token en localStorage Y cookie cada vez que se carga el store
+function sincronizarToken(token?: string) {
+  if (typeof window === 'undefined') return
+  const t = token ?? localStorage.getItem(TOKEN_KEY)
+  if (!t) return
+  // Renovar cookie con 7 días cada vez que el usuario visita la app
+  const expires = new Date()
+  expires.setDate(expires.getDate() + 7)
+  document.cookie = `agro_auth_token=${t};expires=${expires.toUTCString()};path=/;SameSite=Strict`
+}
+
 interface AuthState {
   user: LoginResponse | null
   isAuthenticated: boolean
   isLoading: boolean
-  // Acciones
   setUser: (user: LoginResponse) => void
   logout: () => void
   setLoading: (loading: boolean) => void
@@ -18,11 +30,14 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      user: null,
+      user:            null,
       isAuthenticated: false,
-      isLoading: false,
+      isLoading:       false,
 
-      setUser: (user) => set({ user, isAuthenticated: true }),
+      setUser: (user) => {
+        sincronizarToken()
+        set({ user, isAuthenticated: true })
+      },
 
       logout: () => {
         authApi.logout()
@@ -39,8 +54,14 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'agro_user',        // clave en localStorage
+      name: 'agro_user',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      // Cada vez que se rehidrata el store (recarga de página), sincroniza el token
+      onRehydrateStorage: () => (state) => {
+        if (state?.isAuthenticated) {
+          sincronizarToken()
+        }
+      },
     }
   )
 )

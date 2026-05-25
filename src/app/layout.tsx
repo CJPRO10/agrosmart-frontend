@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import '@/styles/globals.css'
+import ServiceWorkerRegister from './ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   title: 'AgroSmart',
@@ -25,15 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        <script dangerouslySetInnerHTML={{__html: `
-          if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js')
-                .then(function(reg) { console.log('SW registrado:', reg.scope); })
-                .catch(function(err) { console.log('SW error:', err); });
-            });
-          }
-        `}} />
+        {/* El registro del SW se hace en un Client Component para evitar el warning de React */}
+        <ServiceWorkerRegister />
       </body>
     </html>
   )
