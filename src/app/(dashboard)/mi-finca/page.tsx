@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { fincasApi } from '@/lib/api/fincas'
+import { ubicacionesApi } from '@/lib/api/ubicaciones'
+import dynamic from 'next/dynamic'
 import type { Finca, FincaRequest } from '@/types'
+
+// Cargar el mapa solo en el cliente (evita SSR issues con Leaflet)
+const MapaPicker = dynamic(() => import('@/components/MapaPicker'), { ssr: false })
 
 const UBICACIONES = [
   { id: 1, nombre: 'Santa Marta' },
@@ -12,6 +17,9 @@ const UBICACIONES = [
   { id: 5, nombre: 'El Banco' },
   { id: 6, nombre: 'Plato' },
   { id: 7, nombre: 'Pivijay' },
+  { id: 8, nombre: 'Zona Bananera' },
+  { id: 9, nombre: 'Remolino' },
+  { id: 10, nombre: 'Salamina' },
 ]
 
 type ModalMode = 'crear' | 'editar' | null
@@ -28,40 +36,40 @@ export default function MiFincaPage() {
   const [deletingId, setDeletingId]       = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Finca | null>(null)
   const [form, setForm]                   = useState<FincaRequest>(FORM_INICIAL)
+  const [coordenadas, setCoordenadas]     = useState<{ lat: number; lng: number; nombre: string } | null>(null)
 
-    const cargarFincas = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-        const data = await fincasApi.listar()
-        setFincas(data)
-    } catch {
-        setError('No se pudieron cargar las fincas. Verifica la conexión con el servidor.')
-    } finally {
-        setLoading(false)
-    }
-    }
-
+  // Carga inicial
   useEffect(() => {
-  let cancelado = false
+    let cancelado = false
+    const cargar = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await fincasApi.listar()
+        if (!cancelado) setFincas(data)
+      } catch {
+        if (!cancelado) setError('No se pudieron cargar las fincas. Verifica la conexión con el servidor.')
+      } finally {
+        if (!cancelado) setLoading(false)
+      }
+    }
+    cargar()
+    return () => { cancelado = true }
+  }, [])
 
-  const cargar = async () => {
+  // Recarga después de crear/editar/eliminar
+  const cargarFincas = async () => {
     setLoading(true)
     setError(null)
     try {
       const data = await fincasApi.listar()
-      if (!cancelado) setFincas(data)
+      setFincas(data)
     } catch {
-      if (!cancelado) setError('No se pudieron cargar las fincas. Verifica la conexión con el servidor.')
+      setError('No se pudieron cargar las fincas.')
     } finally {
-      if (!cancelado) setLoading(false)
+      setLoading(false)
     }
   }
-
-  cargar()
-
-  return () => { cancelado = true }
-}, [])
 
   const abrirCrear = () => {
     setForm(FORM_INICIAL)
@@ -70,7 +78,14 @@ export default function MiFincaPage() {
   }
 
   const abrirEditar = (finca: Finca) => {
-    setForm({ nombreFinca: finca.nombreFinca, hectareas: finca.hectareas, numLotes: finca.numLotes, idUbicacion: finca.idUbicacion })
+    // Busca el id de la ubicación por nombre ya que el backend devuelve nombreUbicacion
+    const ubicacion = UBICACIONES.find(u => u.nombre === finca.nombreUbicacion)
+    setForm({
+      nombreFinca:  finca.nombreFinca,
+      hectareas:    finca.hectareas,
+      numLotes:     finca.numLotes,
+      idUbicacion:  ubicacion?.id ?? 1,
+    })
     setFincaActiva(finca)
     setModalMode('editar')
   }
@@ -79,10 +94,20 @@ export default function MiFincaPage() {
 
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (modalMode === 'crear' && !coordenadas) {
+      setError('Selecciona la ubicación en el mapa.')
+      return
+    }
     setSaving(true)
     try {
       if (modalMode === 'crear') {
-        await fincasApi.crear(form)
+        // Crear o reusar ubicación con las coordenadas del mapa
+        const ubicacion = await ubicacionesApi.crear({
+          nombre:   coordenadas!.nombre,
+          latitud:  coordenadas!.lat,
+          longitud: coordenadas!.lng,
+        })
+        await fincasApi.crear({ ...form, idUbicacion: ubicacion.idUbicacion })
       } else if (modalMode === 'editar' && fincaActiva) {
         await fincasApi.actualizar(fincaActiva.idFinca, form)
       }
@@ -111,7 +136,7 @@ export default function MiFincaPage() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
-      {/* ------- Encabezado ------- */}
+      {/* Encabezado */}
       <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Fincas</h1>
@@ -125,7 +150,7 @@ export default function MiFincaPage() {
         </button>
       </div>
 
-      {/* ------- Error ------- */}
+      {/* Error */}
       {error && (
         <div className="animate-fade-in" style={{
           display:'flex', alignItems:'center', gap:'8px',
@@ -141,7 +166,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ------- Loading ------- */}
+      {/* Loading */}
       {loading && (
         <div style={{ display:'flex', justifyContent:'center', alignItems:'center', padding:'80px 0' }}>
           <span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>
@@ -150,7 +175,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ------- Sin fincas ------- */}
+      {/* Sin fincas */}
       {!loading && fincas.length === 0 && !error && (
         <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'64px 24px', textAlign:'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'56px', color:'var(--color-primary-fixed)', marginBottom:'16px' }}>home</span>
@@ -167,13 +192,13 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ------- Grid de fincas ------- */}
+      {/* Grid de fincas */}
       {!loading && fincas.length > 0 && (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:'1rem' }}>
           {fincas.map((finca) => (
             <div key={finca.idFinca} className="card" style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
-              {/* ------- Header ------- */}
+              {/* Header */}
               <div style={{ display:'flex', alignItems:'flex-start', gap:'12px' }}>
                 <div style={{
                   width:'44px', height:'44px', borderRadius:'10px', flexShrink:0,
@@ -193,11 +218,11 @@ export default function MiFincaPage() {
                 </div>
               </div>
 
-              {/* ------- Stats -------*/}
+              {/* Stats */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
                 {[
-                  { label: 'Hectáreas', value: finca.hectareas, icon: 'straighten' },
-                  { label: 'Lotes',     value: finca.numLotes,  icon: 'grid_view' },
+                  { label: 'Hectáreas', value: finca.hectareas },
+                  { label: 'Lotes',     value: finca.numLotes  },
                 ].map(stat => (
                   <div key={stat.label} style={{
                     backgroundColor:'var(--color-surface-container-low)',
@@ -209,7 +234,7 @@ export default function MiFincaPage() {
                 ))}
               </div>
 
-              {/* ------- Fecha -------*/}
+              {/* Fecha */}
               {finca.fechaRegistro && (
                 <p style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'4px', margin:0 }}>
                   <span className="material-symbols-outlined" style={{fontSize:'14px'}}>calendar_today</span>
@@ -217,8 +242,8 @@ export default function MiFincaPage() {
                 </p>
               )}
 
-              {/* ------- Acciones -------*/}
-              <div style={{ display:'flex', gap:'8px', paddingTop:'12px', borderTop:`1px solid var(--color-outline-variant)` }}>
+              {/* Acciones */}
+              <div style={{ display:'flex', gap:'8px', paddingTop:'12px', borderTop:'1px solid var(--color-outline-variant)' }}>
                 <button onClick={() => abrirEditar(finca)} style={{
                   flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'4px',
                   padding:'8px', borderRadius:'8px', fontSize:'0.875rem', fontWeight:500, border:'none',
@@ -245,7 +270,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ------- Modal Crear / Editar ------- */}
+      {/* Modal Crear / Editar */}
       {modalMode && (
         <div style={{
           position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
@@ -272,7 +297,7 @@ export default function MiFincaPage() {
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
                   <label className="input-label" htmlFor="hectareas">Hectáreas</label>
-                  <input id="hectareas" type="number" step="0.01" min="0.01" max="5"
+                  <input id="hectareas" type="number" step="0.01" min="0.01"
                     value={form.hectareas || ''}
                     onChange={e => setForm(p => ({...p, hectareas: parseFloat(e.target.value)}))}
                     placeholder="Ej: 2.5" className="input-field" required />
@@ -287,14 +312,17 @@ export default function MiFincaPage() {
               </div>
 
               <div>
-                <label className="input-label" htmlFor="idUbicacion">Municipio</label>
-                <select id="idUbicacion" value={form.idUbicacion}
-                  onChange={e => setForm(p => ({...p, idUbicacion: parseInt(e.target.value)}))}
-                  className="input-field">
-                  {UBICACIONES.map(u => (
-                    <option key={u.id} value={u.id}>{u.nombre}</option>
-                  ))}
-                </select>
+                <label className="input-label">Ubicación de la finca</label>
+                <MapaPicker
+                  latitud={coordenadas?.lat}
+                  longitud={coordenadas?.lng}
+                  onChange={(lat, lng, nombre) => setCoordenadas({ lat, lng, nombre })}
+                />
+                {!coordenadas && (
+                  <p style={{ fontSize:'0.75rem', color:'var(--color-error)', margin:'4px 0 0' }}>
+                    Selecciona la ubicación en el mapa *
+                  </p>
+                )}
               </div>
 
               <div style={{ display:'flex', gap:'12px', paddingTop:'8px' }}>
@@ -313,7 +341,7 @@ export default function MiFincaPage() {
         </div>
       )}
 
-      {/* ------- Modal confirmar eliminación ------- */}
+      {/* Modal confirmar eliminación */}
       {confirmDelete && (
         <div style={{
           position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px',
