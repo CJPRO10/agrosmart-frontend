@@ -7,11 +7,7 @@ export function useOfflineStatus() {
   useEffect(() => {
     setOnline(navigator.onLine)
 
-    const handleOnline  = () => {
-      setOnline(true)
-      // Forzar recarga de la página al volver online
-      window.location.reload()
-    }
+    const handleOnline  = () => setOnline(true)
     const handleOffline = () => setOnline(false)
 
     window.addEventListener('online',  handleOnline)
