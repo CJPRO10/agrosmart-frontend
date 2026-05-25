@@ -1,91 +1,101 @@
-// Service Worker para Agrosmart
-// Cache First para assets, Network First para API, Offline fallback
+const CACHE_NAME = 'agrosmart-v2'
+const CACHE_STATIC = 'agrosmart-static-v2'
 
-const CACHE_NAME = 'agrosmart-v1'
-const OFFLINE_PAGE = '/offline'
-
-// Assets estáticos que siempre deben estar disponibles
+// Assets estáticos que se cachean al instalar
 const STATIC_ASSETS = [
   '/',
   '/offline',
   '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
 ]
 
-// ─── Install: cachea los assets estáticos esenciales ───────
+// Rutas del dashboard que se cachean para offline
+const DASHBOARD_ROUTES = [
+  '/inicio', '/cultivos', '/tareas', '/anomalias',
+  '/clima', '/recomendaciones', '/finanzas', '/reportes',
+  '/mi-finca', '/perfil', '/personal', '/notificaciones',
+]
+
+// ── Install: cachea assets esenciales ────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_STATIC).then((cache) => {
+      return cache.addAll(STATIC_ASSETS).catch(() => {})
+    })
   )
   self.skipWaiting()
 })
 
-// ─── Activate: limpia caches viejos ────────
+// ── Activate: limpia caches viejos ───────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== CACHE_STATIC)
+          .map((k) => caches.delete(k))
       )
     )
   )
   self.clients.claim()
 })
 
-// ─── Fetch: lógica offline-first ───────
+// ── Fetch: estrategia por tipo de recurso ────────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Llamadas al backend (API) → Network First, fallback a IndexedDB en el cliente
-  if (url.pathname.startsWith('/api') || url.hostname === 'localhost' && url.port === '8080') {
-    return
-  }
+  // Ignorar extensiones de Chrome y otros
+  if (!url.protocol.startsWith('http')) return
 
-  // Assets Next.js (_next/static) → Cache First nunca cambian en el mismo build
-  if (url.pathname.startsWith('/_next/static')) {
+  // API calls — Network First, sin cache (datos en tiempo real)
+  if (url.pathname.startsWith('/api') || url.hostname.includes('railway')) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached
-        return fetch(request).then((response) => {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ error: 'Sin conexión' }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 503,
         })
-      })
+      )
     )
     return
   }
 
-  // Páginas de la app → Network First, fallback al cache, luego /offline
-  if (request.mode === 'navigate') {
+  // Assets estáticos (_next, iconos, fuentes) — Cache First
+  if (
+    url.pathname.startsWith('/_next/static') ||
+    url.pathname.startsWith('/icons') ||
+    url.pathname.includes('.png') ||
+    url.pathname.includes('.ico') ||
+    url.pathname.includes('.woff')
+  ) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
+      caches.match(request).then((cached) =>
+        cached || fetch(request).then((res) => {
+          if (res.ok) {
+            caches.open(CACHE_STATIC).then((cache) => cache.put(request, res.clone()))
+          }
+          return res
         })
-        .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match(OFFLINE_PAGE))
-        )
+      )
     )
     return
   }
 
-  // Todo lo demás → Network First con fallback a cache
+  // Páginas HTML — Network First con fallback al cache, luego offline
   event.respondWith(
-    fetch(request).catch(() => caches.match(request))
+    fetch(request)
+      .then((res) => {
+        if (res.ok) {
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, res.clone()))
+        }
+        return res
+      })
+      .catch(() =>
+        caches.match(request).then((cached) =>
+          cached || caches.match('/offline')
+        )
+      )
   )
 })
-
-// ─── Background Sync: reintenta solicitudes fallidas cuando hay conexión ─────
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-pending-requests') {
-    event.waitUntil(syncPendingRequests())
-  }
-})
-
-async function syncPendingRequests() {
-  const clients = await self.clients.matchAll()
-  clients.forEach((client) => client.postMessage({ type: 'SYNC_TRIGGERED' }))
-}

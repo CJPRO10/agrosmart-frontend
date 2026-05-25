@@ -3,6 +3,7 @@
   "short_name": "AgroSmart",
   "description": "Plataforma Digital de Agricultura Inteligente para Pequeños Productores del Magdalena",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f9faf2",
   "theme_color": "#154212",
@@ -22,5 +23,17 @@
     }
   ],
   "categories": ["productivity", "agriculture"],
-  "lang": "es"
+  "lang": "es",
+  "shortcuts": [
+    {
+      "name": "Mis Cultivos",
+      "url": "/cultivos",
+      "description": "Ver mis cultivos"
+    },
+    {
+      "name": "Mis Tareas",
+      "url": "/tareas",
+      "description": "Ver mis tareas"
+    }
+  ]
 }

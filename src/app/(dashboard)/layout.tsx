@@ -22,7 +22,6 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
     { label: 'Mis Finanzas',      icon: 'payments',       href: '/finanzas'         },
     { label: 'Reportes',          icon: 'bar_chart',      href: '/reportes',    sep: true },
-    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   OPERARIO: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
@@ -31,7 +30,6 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
     { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
     { label: 'El Clima',          icon: 'cloudy_snowing', href: '/clima'            },
-    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   AUXILIAR: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
@@ -39,12 +37,10 @@ const NAV_BY_ROL: Record<Rol, { label: string; icon: string; href: string; sep?:
     { label: 'Mis Tareas',        icon: 'assignment',     href: '/tareas'           },
     { label: 'Problemas',         icon: 'bug_report',     href: '/anomalias',   sep: true },
     { label: 'Consejos',          icon: 'lightbulb',      href: '/recomendaciones'  },
-    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
   ADMINISTRADOR: [
     { label: 'Inicio',            icon: 'dashboard',      href: '/inicio'           },
     { label: 'Usuarios',          icon: 'manage_accounts', href: '/usuarios'        },
-    { label: 'Notificaciones', icon: 'notifications', href: '/notificaciones', sep: true },
   ],
 }
 
@@ -70,7 +66,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     (user.nombreCompleto?.split(' ')[1]?.[0] ?? '')
   ).toUpperCase()
 
-  const sidebarW = sidebarOpen ? '256px' : '64px'
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  const sidebarW = isMobile ? '0px' : sidebarOpen ? '256px' : '64px'
 
   const ROL_LABEL: Record<string, string> = {
     PRODUCTOR:    'Productor Agrícola',
@@ -90,9 +95,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{ minHeight:'100vh', backgroundColor:'var(--color-background)', display:'flex' }}>
 
       {/* Sidebar */}
+      {/* Overlay para móvil */}
+      {isMobile && sidebarOpen && (
+        <div onClick={toggleSidebar} style={{ position:'fixed', inset:0, zIndex:49, backgroundColor:'rgba(0,0,0,0.5)' }} />
+      )}
+
       <aside style={{
         position:'fixed', left:0, top:0, height:'100%', zIndex:50,
-        width: sidebarW, transition:'width 0.3s',
+        width: isMobile ? (sidebarOpen ? '280px' : '0px') : sidebarW,
+        transition:'width 0.3s', overflow:'hidden',
         display:'flex', flexDirection:'column', padding:'24px 16px',
         backgroundColor:'var(--color-surface-container-lowest)',
         borderRight:`1px solid var(--color-outline-variant)`,
@@ -102,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
           <span className="material-symbols-outlined" style={{ color:'var(--color-primary)', fontSize:'28px', flexShrink:0 }}>potted_plant</span>
           {sidebarOpen && (
-            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroSmart</span>
+            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroMagdalena</span>
           )}
         </div>
 
@@ -183,7 +194,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Área principal */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft:sidebarW, transition:'margin-left 0.3s' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft: isMobile ? '0px' : sidebarW, transition:'margin-left 0.3s' }}>
 
         {/* Topbar */}
         <header style={{
