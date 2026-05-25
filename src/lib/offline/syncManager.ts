@@ -1,64 +1,32 @@
-// ------- Sync Manager -------
-// Cuando vuelve la conexión, reintenta los requests pendientes
+// Sincroniza peticiones pendientes cuando vuelve el internet
+import { getPendingRequests, clearPendingRequests } from './db'
+import { TOKEN_KEY } from '@/lib/api/client'
 
-import apiClient from '@/lib/api/client'
-import { getPendingRequests, deletePendingRequest } from './db'
+export async function sincronizarPendientes(): Promise<number> {
+  const pendientes = await getPendingRequests()
+  if (pendientes.length === 0) return 0
 
-export async function syncPendingRequests(): Promise<void> {
-  if (!navigator.onLine) return
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
+  let exitosos = 0
 
-  const pending = await getPendingRequests()
-  if (pending.length === 0) return
-
-  console.log(`[Sync] ${pending.length} request(s) pendiente(s)`)
-
-  for (const req of pending) {
+  for (const req of pendientes) {
+    const r = req as { url: string; method: string; body: unknown }
     try {
-      await apiClient.request({ method: req.method, url: req.url, data: req.body })
-      if (req.id) await deletePendingRequest(req.id)
-      console.log(`[Sync] ✓ ${req.method} ${req.url}`)
-    } catch {
-      console.warn(`[Sync] ✗ No se pudo sincronizar ${req.method} ${req.url}`)
-    }
+      const res = await fetch(r.url, {
+        method: r.method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: r.body ? JSON.stringify(r.body) : undefined,
+      })
+      if (res.ok) exitosos++
+    } catch { /* si falla, dejar para el próximo intento */ }
   }
-}
 
-// ------- Registrar Service Worker y escuchar eventos online -------
-export function initOfflineSync(): void {
-  if (typeof window === 'undefined') return
-
-  // Sync cuando vuelve la conexión
-  window.addEventListener('online', () => {
-    console.log('[Sync] Conexión restaurada — iniciando sync...')
-    syncPendingRequests()
-  })
-
-  // Escucha mensajes del Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data?.type === 'SYNC_TRIGGERED') {
-        syncPendingRequests()
-      }
-    })
+  if (exitosos === pendientes.length) {
+    await clearPendingRequests()
   }
-}
 
-// ------- Registrar el Service Worker -------
-export async function registerServiceWorker(): Promise<void> {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
-
-  try {
-    const registration = await navigator.serviceWorker.register('/sw.js')
-    console.log('[SW] Registrado:', registration.scope)
-
-    // Pedir permiso para Background Sync
-    if ('sync' in registration) {
-        const syncRegistration = registration as ServiceWorkerRegistration & {
-            sync: { register: (tag: string) => Promise<void> }
-        }
-        await syncRegistration.sync.register('sync-pending-requests')
-    }
-  } catch (error) {
-    console.error('[SW] Error al registrar:', error)
-  }
+  return exitosos
 }

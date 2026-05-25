@@ -1,56 +1,48 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
-import { ApiError } from '@/types'
+import axios from 'axios'
+import { addPendingRequest } from '@/lib/offline/db'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api'
-const TOKEN_KEY = 'agro_auth_token'
+export const TOKEN_KEY = 'agro_auth_token'
 
-const apiClient: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 15_000,
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api',
   headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 })
+
+// Request: agregar token JWT
 apiClient.interceptors.request.use((config) => {
-  if (!navigator.onLine) {
-    return Promise.reject(new Error('Sin conexión a internet'))
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (token) config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem(TOKEN_KEY)
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
 
-// Tipo para la respuesta de error del backend Spring Boot
-interface BackendErrorResponse {
-  message?: string
-  error?: string
-}
-
+// Response: manejar errores
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<BackendErrorResponse>) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem(TOKEN_KEY)
-      window.location.href = '/login'
+  async (error) => {
+    // Sin conexión — guardar en cola de pendientes para sincronizar después
+    if (!error.response && error.config) {
+      const method = error.config.method?.toUpperCase()
+      // Solo guardar mutaciones (POST, PUT, PATCH, DELETE)
+      if (['POST','PUT','PATCH','DELETE'].includes(method ?? '')) {
+        await addPendingRequest(
+          error.config.baseURL + error.config.url,
+          method,
+          error.config.data ? JSON.parse(error.config.data) : null
+        )
+      }
     }
 
-    const apiError: ApiError = {
-      mensaje: error.response?.data?.message ?? error.response?.data?.error ?? 'Error de conexión con el servidor',
-      status:  error.response?.status ?? 0,
-      timestamp: new Date().toISOString(),
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(TOKEN_KEY)
+        window.location.href = '/login'
+      }
     }
-
-    return Promise.reject(apiError)
+    return Promise.reject(error)
   }
 )
 
 export default apiClient
-export { TOKEN_KEY, BASE_URL }
