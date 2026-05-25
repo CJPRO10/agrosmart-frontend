@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  const sidebarW = isMobile ? '0px' : sidebarOpen ? '256px' : '64px'
+  const sidebarW = sidebarOpen ? '256px' : '64px'
 
   const ROL_LABEL: Record<string, string> = {
     PRODUCTOR:    'Productor Agrícola',
@@ -101,25 +101,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       <aside style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        height: '100%',
-        zIndex: 50,
+        position:'fixed', left:0, top:0, height:'100%', zIndex:50,
         width: isMobile ? (sidebarOpen ? '280px' : '0px') : sidebarW,
-        minWidth: 0,
-        overflow: 'hidden',
-        transition: 'width 0.3s',
-        backgroundColor: 'var(--color-surface-container-low)',
-        borderRight: '1px solid var(--color-outline-variant)',
-        display: 'flex',
-        flexDirection: 'column',
+        transition:'width 0.3s', overflow:'hidden',
+        display:'flex', flexDirection:'column', padding:'24px 16px',
+        backgroundColor:'var(--color-surface-container-lowest)',
+        borderRight:`1px solid var(--color-outline-variant)`,
+        boxShadow:'2px 0 8px rgba(0,0,0,0.05)'
       }}>
         {/* Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
           <span className="material-symbols-outlined" style={{ color:'var(--color-primary)', fontSize:'28px', flexShrink:0 }}>potted_plant</span>
           {sidebarOpen && (
-            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroMagdalena</span>
+            <span style={{ fontWeight:700, fontSize:'1.1rem', color:'var(--color-primary)', whiteSpace:'nowrap' }}>AgroSmart</span>
           )}
         </div>
 
@@ -200,19 +194,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Área principal */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        marginLeft: isMobile ? '0px' : sidebarW,
-        transition: 'margin-left 0.3s',
-        minWidth: 0,
-        width: isMobile ? '100%' : undefined,
-      }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft: isMobile ? '0px' : sidebarW, transition:'margin-left 0.3s', minWidth:0 }}>
 
         {/* Topbar */}
         <header style={{
-          position:'fixed', top:0, left: isMobile ? '0px' : sidebarW, right: 0, zIndex:40, height:'64px',
+          position:'sticky', top:0, zIndex:40, height:'64px',
           display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px',
           backgroundColor:'rgba(249,250,242,0.92)', backdropFilter:'blur(8px)',
           borderBottom:`1px solid var(--color-outline-variant)`
@@ -278,7 +264,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Contenido */}
-        <main style={{ flex:1, padding:'24px' }}>
+        <main style={{ flex:1, padding:'24px', maxWidth:'100%', overflowX:'hidden' }}>
           {children}
         </main>
       </div>
