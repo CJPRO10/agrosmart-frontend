@@ -41,6 +41,12 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         authApi.logout()
+        // Limpiar localStorage y cookies
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('agro_auth_token')
+          document.cookie = 'agro_auth_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
+          window.location.href = '/'
+        }
         set({ user: null, isAuthenticated: false })
       },
 
