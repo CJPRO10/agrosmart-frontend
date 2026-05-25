@@ -6,6 +6,7 @@ import type { ReporteResponse, ReporteRequest } from '@/lib/api/reportes'
 import { generarReporte } from '@/lib/utils/reportGenerator'
 import { siembrasApi } from '@/lib/api/siembras'
 import { finanzasApi } from '@/lib/api/finanzas'
+import { parseFecha } from '@/lib/utils/fecha'
 
 type Formato      = 'PDF' | 'XLS' | 'CSV'
 type Periodicidad = 'DIARIO' | 'SEMANAL' | 'MENSUAL' | 'ANUAL'
@@ -113,8 +114,8 @@ export default function ReportesPage() {
           'Finca':         s.nombreFinca,
           'Lote':          s.numLote,
           'Estado':        s.nombreEstado,
-          'Fecha Siembra': s.fechaSiembra ? new Date(String(s.fechaSiembra)).toLocaleDateString('es-CO') : '--',
-          'Último Estado': s.fechaEstado  ? new Date(String(s.fechaEstado)).toLocaleDateString('es-CO')  : '--',
+          'Fecha Siembra': (() => { const f = parseFecha(s.fechaSiembra); return f ? new Date(f).toLocaleDateString('es-CO') : '--' })(),
+          'Último Estado': (() => { const f = parseFecha(s.fechaEstado);  return f ? new Date(f).toLocaleDateString('es-CO') : '--' })(),
         }))
       }
 
