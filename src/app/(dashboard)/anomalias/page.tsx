@@ -6,6 +6,7 @@ import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { anomaliasApi } from '@/lib/api/anomalias'
 import { siembrasApi } from '@/lib/api/siembras'
 import type { SiembraResponse } from '@/lib/api/siembras'
+import { formatFechaCorta } from '@/lib/utils/fecha'
 
 type TipoAnomalia  = 'PLAGA' | 'ENFERMEDAD' | 'CLIMATICA' | 'OTRA'
 type EstadoAnomalia = 'ACTIVA' | 'EN_SEGUIMIENTO' | 'RESUELTA'
@@ -236,7 +237,7 @@ export default function AnomaliasPage() {
                     </span>
                     <span style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'2px' }}>
                       <span className="material-symbols-outlined" style={{fontSize:'14px'}}>calendar_today</span>
-                      {a.fechaDeteccion ? new Date(a.fechaDeteccion).toLocaleDateString('es-CO') : '--'}
+                      {formatFechaCorta(a.fechaDeteccion)}
                     </span>
                   </div>
                 </div>
