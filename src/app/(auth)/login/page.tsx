@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { extraerMensajeError } from '@/lib/utils/errorHandler'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import type { LoginRequest } from '@/types'
@@ -30,10 +31,7 @@ export default function LoginPage() {
     try {
       await login(form)
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'mensaje' in err
-        ? (err as { mensaje: string }).mensaje
-        : 'Correo o contraseña incorrectos'
-      setError(msg)
+      setError(extraerMensajeError(err, 'Correo o contraseña incorrectos'))
     }
   }
 
