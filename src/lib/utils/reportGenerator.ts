@@ -1,5 +1,6 @@
 // Generador de reportes para descarga local
 // Soporta PDF, XLS y CSV
+import { parseFecha } from './fecha'
 
 export interface ReporteData {
   nombre: string

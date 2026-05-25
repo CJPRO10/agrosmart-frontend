@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { notificacionesApi } from '@/lib/api/notificaciones'
 import { useUIStore } from '@/store/uiStore'
+import { formatFecha } from '@/lib/utils/fecha'
 import type {
   NotificacionResponse, TipoNotificacion,
   PrioridadNotificacion, EstadoNotificacion, PreferenciaRequest
@@ -290,7 +291,7 @@ export default function NotificacionesPage() {
                     {fecha && (
                       <span style={{ fontSize:'0.75rem', color:'var(--color-outline)', display:'flex', alignItems:'center', gap:'2px' }}>
                         <span className="material-symbols-outlined" style={{fontSize:'14px'}}>schedule</span>
-                        {new Date(fecha).toLocaleDateString('es-CO', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}
+                        {formatFecha(n.fechaCreacion, { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}
                       </span>
                     )}
                     {n.nombreUsuario && (

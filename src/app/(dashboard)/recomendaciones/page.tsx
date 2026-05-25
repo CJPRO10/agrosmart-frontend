@@ -5,6 +5,7 @@ import { recomendacionesApi } from '@/lib/api/recomendaciones'
 import { siembrasApi } from '@/lib/api/siembras'
 import type { RecomendacionResponse, RecomendacionRequest } from '@/lib/api/recomendaciones'
 import type { SiembraResponse } from '@/lib/api/siembras'
+import { formatFecha } from '@/lib/utils/fecha'
 
 const PRIORIDAD_CONFIG: Record<string, { bg: string; color: string }> = {
   ALTA:   { bg:'var(--color-error-container)',   color:'var(--color-error)'     },
@@ -229,7 +230,7 @@ export default function RecomendacionesPage() {
                   {r.fechaGeneracion && (
                     <p style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', margin:0, display:'flex', alignItems:'center', gap:'2px' }}>
                       <span className="material-symbols-outlined" style={{fontSize:'14px'}}>schedule</span>
-                      {new Date(r.fechaGeneracion).toLocaleDateString('es-CO', { day:'numeric', month:'long' })}
+                      {formatFecha(r.fechaGeneracion, { day:'numeric', month:'long' })}
                     </p>
                   )}
                 </div>
