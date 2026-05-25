@@ -255,7 +255,8 @@ export default function TareasPage() {
             const cfg = ESTADO_CONFIG[estadoActual] ?? ESTADO_CONFIG['PENDIENTE']
             const vencida = tarea.fechaLimite && new Date(parseFecha(tarea.fechaLimite)) < new Date() && estadoActual !== 'COMPLETADA'
             const asignacion = tarea.asignaciones?.[0]
-            const asignado   = asignacion?.operarioAsignado ?? asignacion?.auxiliarAsignado
+            const asignado = (asignacion as unknown as { operarioAsignado?: string; auxiliarAsignado?: string })?.operarioAsignado 
+               ?? (asignacion as unknown as { operarioAsignado?: string; auxiliarAsignado?: string })?.auxiliarAsignado
 
             return (
               <div key={tarea.idTarea} className="card" style={{ display:'flex', alignItems:'flex-start', gap:'16px', padding:'16px', borderLeft:`4px solid ${cfg.color}` }}>
