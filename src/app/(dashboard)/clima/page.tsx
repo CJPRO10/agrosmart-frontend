@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { climaApi } from '@/lib/api/clima'
 import { fincasApi } from '@/lib/api/fincas'
+import { recomendacionesApi } from '@/lib/api/recomendaciones'
 import type { ClimaResponse, DiaPronostico, PronosticoResponse } from '@/lib/api/clima'
 import type { Finca } from '@/types'
 
@@ -38,6 +39,8 @@ export default function ClimaPage() {
   const [actualizando, setActualizando] = useState(false)
   const [error, setError]             = useState<string | null>(null)
   const [tab, setTab]                 = useState<'actual' | 'pronostico' | 'historial'>('actual')
+  const [generandoRec, setGenerandoRec] = useState(false)
+  const [recGenerada, setRecGenerada]   = useState<string | null>(null)
 
   // Cargar fincas primero
   useEffect(() => {
@@ -102,6 +105,25 @@ export default function ClimaPage() {
     if (finca) setUbicacionId(finca.idUbicacion)
   }
 
+  const handleGenerarRecomendacion = async () => {
+    if (!climaActual) return
+    setGenerandoRec(true)
+    setRecGenerada(null)
+    try {
+      // Solicitar recomendación basada en las condiciones climáticas actuales
+      const rec = await recomendacionesApi.solicitar({
+        idSiembra: 0,
+       descripcionSolicitud: `Condiciones actuales: ${climaActual.condicion}, ${climaActual.temperatura}°C, precipitación ${climaActual.precipitacion}mm en ${climaActual.nombreUbicacion}. ¿Qué acciones debo tomar?`,
+        categoria: 'CLIMA',
+      })
+      setRecGenerada(rec.descripcion ?? 'Recomendación generada exitosamente.')
+    } catch {
+      setError('Error al generar la recomendación climática.')
+    } finally {
+      setGenerandoRec(false)
+    }
+  }
+
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
@@ -120,12 +142,30 @@ export default function ClimaPage() {
               {fincas.map(f => <option key={f.idFinca} value={f.idFinca}>{f.nombreFinca}</option>)}
             </select>
           )}
+          <button onClick={handleGenerarRecomendacion} disabled={generandoRec || !climaActual} className="btn-primary" style={{ whiteSpace:'nowrap', minHeight:'40px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize:'18px', ...(generandoRec ? {animation:'spin 1s linear infinite'} : {}) }}>lightbulb</span>
+            {generandoRec ? 'Generando...' : 'Generar recomendación'}
+          </button>
           <button onClick={handleActualizar} disabled={actualizando} className="btn-secondary" style={{ whiteSpace:'nowrap', minHeight:'40px' }}>
             <span className="material-symbols-outlined" style={{ fontSize:'18px', ...(actualizando ? {animation:'spin 1s linear infinite'} : {}) }}>refresh</span>
             {actualizando ? 'Actualizando...' : 'Actualizar'}
           </button>
         </div>
       </div>
+
+      {/* Recomendación generada — RF44 */}
+      {recGenerada && (
+        <div className="animate-fade-in" style={{ display:'flex', alignItems:'flex-start', gap:'12px', padding:'16px', borderRadius:'12px', backgroundColor:'var(--color-primary-fixed)', border:'1px solid var(--color-primary)' }}>
+          <span className="material-symbols-outlined" style={{ fontSize:'22px', color:'var(--color-primary)', flexShrink:0 }}>lightbulb</span>
+          <div style={{ flex:1 }}>
+            <p style={{ fontWeight:600, color:'var(--color-primary)', margin:'0 0 4px', fontSize:'0.875rem' }}>Recomendación basada en el clima</p>
+            <p style={{ fontSize:'0.875rem', color:'var(--color-on-surface)', margin:0 }}>{recGenerada}</p>
+          </div>
+          <button onClick={() => setRecGenerada(null)} style={{ padding:'4px', border:'none', cursor:'pointer', background:'transparent', color:'var(--color-primary)' }}>
+            <span className="material-symbols-outlined" style={{fontSize:'18px'}}>close</span>
+          </button>
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -177,10 +217,23 @@ export default function ClimaPage() {
                     </div>
                   ))}
                 </div>
+                {/* RF43 — Alerta climática */}
                 {climaActual?.alerta && (
-                  <div style={{ marginTop:'16px', padding:'8px 12px', borderRadius:'8px', backgroundColor:'rgba(255,255,255,0.2)', fontSize:'0.8rem' }}>
-                    <span className="material-symbols-outlined" style={{fontSize:'16px', verticalAlign:'middle', marginRight:'4px'}}>warning</span>
-                    {climaActual.alerta}
+                  <div className="animate-fade-in" style={{
+                    display:'flex', alignItems:'center', gap:'12px',
+                    padding:'16px', borderRadius:'12px',
+                    backgroundColor:'var(--color-error-container)',
+                    border:'1px solid var(--color-error)'
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize:'28px', color:'var(--color-error)', flexShrink:0 }}>
+                      warning
+                    </span>
+                    <div>
+                      <p style={{ fontWeight:700, color:'var(--color-error)', margin:'0 0 4px' }}>Alerta Climática</p>
+                      <p style={{ fontSize:'0.875rem', color:'var(--color-on-error-container)', margin:0 }}>
+                        {climaActual.alerta}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

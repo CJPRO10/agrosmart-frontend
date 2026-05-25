@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import '@/styles/globals.css'
+import ServiceWorkerRegister from './ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   title: 'AgroSmart',
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* El registro del SW se hace en un Client Component para evitar el warning de React */}
+        <ServiceWorkerRegister />
+      </body>
     </html>
   )
 }

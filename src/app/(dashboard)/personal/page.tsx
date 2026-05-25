@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usuariosApi } from '@/lib/api/usuarios'
+import type { UsuarioUpdateRequest } from '@/lib/api/usuarios'
 import type { UsuarioResponse, UsuarioRequest } from '@/lib/api/usuarios'
 
 const ROL_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
@@ -24,6 +25,9 @@ export default function PersonalPage() {
   const [busqueda, setBusqueda]   = useState('')
   const [form, setForm]           = useState<UsuarioRequest>(FORM_INICIAL)
   const [confirmDesactivar, setConfirmDesactivar] = useState<UsuarioResponse | null>(null)
+  const [modalEditar, setModalEditar]   = useState<UsuarioResponse | null>(null)
+  const [formEditar, setFormEditar]     = useState({ nombre:'', apellido:'', telefono:'', rol:'OPERARIO' as 'OPERARIO'|'AUXILIAR' })
+  const [guardandoEditar, setGuardandoEditar] = useState(false)
 
   useEffect(() => {
     let cancelado = false
@@ -81,6 +85,27 @@ export default function PersonalPage() {
       setError('Error al registrar el personal. Verifica que el correo no esté en uso.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const abrirEditar = (u: UsuarioResponse) => {
+    setFormEditar({ nombre:u.nombre, apellido:u.apellido, telefono:u.telefono ?? '', rol: u.rol as 'OPERARIO'|'AUXILIAR' })
+    setModalEditar(u)
+  }
+
+  const handleEditar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!modalEditar) return
+    setGuardandoEditar(true)
+    try {
+      const req: UsuarioUpdateRequest = { nombre:formEditar.nombre, apellido:formEditar.apellido, telefono:formEditar.telefono, rol:formEditar.rol }
+      await usuariosApi.actualizar(modalEditar.idUsuario, req)
+      setModalEditar(null)
+      await recargar()
+    } catch {
+      setError('Error al actualizar el personal.')
+    } finally {
+      setGuardandoEditar(false)
     }
   }
 
@@ -206,7 +231,14 @@ export default function PersonalPage() {
                 )}
 
                 {p.activo && (
-                  <div style={{ paddingTop:'8px', borderTop:'1px solid var(--color-outline-variant)' }}>
+                  <div style={{ paddingTop:'8px', borderTop:'1px solid var(--color-outline-variant)', display:'flex', gap:'8px' }}>
+                    <button onClick={() => abrirEditar(p)}
+                      style={{ flex:1, padding:'8px', borderRadius:'8px', border:'none', cursor:'pointer', fontSize:'0.875rem', fontWeight:500,
+                        color:'var(--color-secondary)', backgroundColor:'transparent', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
+                      onMouseEnter={e=>(e.currentTarget.style.backgroundColor='var(--color-secondary-fixed)')}
+                      onMouseLeave={e=>(e.currentTarget.style.backgroundColor='transparent')}>
+                      <span className="material-symbols-outlined" style={{fontSize:'18px'}}>edit</span> Editar
+                    </button>
                     <button onClick={() => setConfirmDesactivar(p)}
                       style={{ width:'100%', padding:'8px', borderRadius:'8px', border:'none', cursor:'pointer', fontSize:'0.875rem', fontWeight:500,
                         color:'var(--color-error)', backgroundColor:'transparent', display:'flex', alignItems:'center', justifyContent:'center', gap:'4px' }}
@@ -287,6 +319,60 @@ export default function PersonalPage() {
                 <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary" style={{flex:1}}>Cancelar</button>
                 <button type="submit" disabled={saving} className="btn-primary" style={{flex:1}}>
                   {saving ? <><span className="material-symbols-outlined animate-spin" style={{fontSize:'18px'}}>progress_activity</span> Guardando...</> : <><span className="material-symbols-outlined" style={{fontSize:'18px'}}>person_add</span> Agregar</>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal editar personal — RF37 */}
+      {modalEditar && (
+        <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'rgba(0,0,0,0.5)' }}>
+          <div className="card animate-slide-up" style={{ width:'100%', maxWidth:'440px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px' }}>
+              <h2 style={{ fontSize:'1.25rem', fontWeight:700, color:'var(--color-on-surface)', margin:0 }}>Editar Personal</h2>
+              <button onClick={() => setModalEditar(null)} style={{ padding:'4px', borderRadius:'8px', border:'none', cursor:'pointer', background:'transparent', color:'var(--color-on-surface-variant)' }}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleEditar} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label className="input-label">Nombre</label>
+                  <input type="text" value={formEditar.nombre} onChange={e=>setFormEditar(p=>({...p,nombre:e.target.value}))} className="input-field" />
+                </div>
+                <div>
+                  <label className="input-label">Apellido</label>
+                  <input type="text" value={formEditar.apellido} onChange={e=>setFormEditar(p=>({...p,apellido:e.target.value}))} className="input-field" />
+                </div>
+              </div>
+              <div>
+                <label className="input-label">Teléfono</label>
+                <input type="tel" value={formEditar.telefono} onChange={e=>setFormEditar(p=>({...p,telefono:e.target.value}))} placeholder="+57 300..." className="input-field" />
+              </div>
+              <div>
+                <label className="input-label">Rol</label>
+                <div style={{ display:'flex', gap:'8px' }}>
+                  {(['OPERARIO','AUXILIAR'] as const).map(r => {
+                    const cfg = ROL_CONFIG[r]
+                    return (
+                      <button key={r} type="button" onClick={() => setFormEditar(p=>({...p,rol:r}))}
+                        style={{ flex:1, padding:'10px', borderRadius:'8px',
+                          border: `2px solid ${formEditar.rol === r ? cfg.color : 'var(--color-outline-variant)'}`,
+                          cursor:'pointer', fontSize:'0.875rem', fontWeight:600,
+                          backgroundColor: formEditar.rol === r ? cfg.bg : 'transparent',
+                          color: formEditar.rol === r ? cfg.color : 'var(--color-on-surface-variant)' }}>
+                        {r}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:'12px', paddingTop:'8px' }}>
+                <button type="button" onClick={() => setModalEditar(null)} className="btn-secondary" style={{flex:1}}>Cancelar</button>
+                <button type="submit" disabled={guardandoEditar} className="btn-primary" style={{flex:1}}>
+                  {guardandoEditar ? <><span className="material-symbols-outlined animate-spin" style={{fontSize:'18px'}}>progress_activity</span> Guardando...</> : <><span className="material-symbols-outlined" style={{fontSize:'18px'}}>save</span> Guardar</>}
                 </button>
               </div>
             </form>
