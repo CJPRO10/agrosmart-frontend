@@ -1,29 +1,25 @@
-// ------- IndexedDB con idb -------
-// Almacena datos localmente cuando no hay conexión al backend
-
+// IndexedDB para almacenamiento offline
 import { openDB, DBSchema, IDBPDatabase } from 'idb'
 
 interface AgroSmartDB extends DBSchema {
-  // Pendientes de sincronización (POST/PUT/PATCH/DELETE fallidos)
+  // Cache de datos del backend
+  siembras:        { key: number; value: unknown }
+  fincas:          { key: number; value: unknown }
+  tareas:          { key: number; value: unknown }
+  anomalias:       { key: number; value: unknown }
+  recomendaciones: { key: number; value: unknown }
+  notificaciones:  { key: number; value: unknown }
+  cultivos:        { key: number; value: unknown }
+  estados:         { key: number; value: unknown }
+  // Cola de operaciones pendientes para sincronizar
   pendingRequests: {
     key: number
     value: {
       id?: number
-      method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
       url: string
+      method: string
       body: unknown
-      createdAt: string
-      retries: number
-    }
-    indexes: { 'by-url': string }
-  }
-  // Cache de datos para lectura offline
-  cache: {
-    key: string      // ej: 'fincas', 'tareas', 'anomalias'
-    value: {
-      key: string
-      data: unknown
-      cachedAt: string
+      timestamp: number
     }
   }
 }
@@ -32,61 +28,70 @@ let db: IDBPDatabase<AgroSmartDB> | null = null
 
 export async function getDB(): Promise<IDBPDatabase<AgroSmartDB>> {
   if (db) return db
-
-  db = await openDB<AgroSmartDB>('agrosmart-db', 1, {
+  db = await openDB<AgroSmartDB>('agrosmart-db', 2, {
     upgrade(database) {
-      // Tabla de requests pendientes
-      const pendingStore = database.createObjectStore('pendingRequests', {
-        keyPath: 'id',
-        autoIncrement: true,
+      const stores = [
+        'siembras', 'fincas', 'tareas', 'anomalias',
+        'recomendaciones', 'notificaciones', 'cultivos', 'estados'
+      ] as const
+      stores.forEach(store => {
+        if (!database.objectStoreNames.contains(store)) {
+          database.createObjectStore(store, { keyPath: undefined, autoIncrement: false })
+        }
       })
-      pendingStore.createIndex('by-url', 'url')
-
-      // Tabla de cache
-      database.createObjectStore('cache', { keyPath: 'key' })
+      if (!database.objectStoreNames.contains('pendingRequests')) {
+        database.createObjectStore('pendingRequests', { keyPath: 'id', autoIncrement: true })
+      }
     },
   })
-
   return db
 }
 
-// ------- Guardar en cache para lectura offline -------
-export async function saveToCache(key: string, data: unknown): Promise<void> {
-  const database = await getDB()
-  await database.put('cache', { key, data, cachedAt: new Date().toISOString() })
+// Guardar lista de items en cache
+export async function cacheData(store: string, items: unknown[]) {
+  try {
+    const database = await getDB()
+    const tx = database.transaction(store as never, 'readwrite')
+    await (tx.store as unknown as { clear: () => Promise<void> }).clear()
+    for (const item of items) {
+      await (tx.store as unknown as { add: (v: unknown) => Promise<unknown> }).add(item)
+    }
+    await tx.done
+  } catch { /* ignorar errores de IndexedDB */ }
 }
 
-// ------- Leer del cache -------
-export async function readFromCache<T>(key: string): Promise<T | null> {
-  const database = await getDB()
-  const entry = await database.get('cache', key)
-  return entry ? (entry.data as T) : null
+// Leer items del cache
+export async function getCachedData(store: string): Promise<unknown[]> {
+  try {
+    const database = await getDB()
+    return await database.getAll(store as never)
+  } catch {
+    return []
+  }
 }
 
-// ------- Guardar request pendiente para sync posterior -------
-export async function savePendingRequest(
-  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-  url: string,
-  body: unknown
-): Promise<void> {
-  const database = await getDB()
-  await database.add('pendingRequests', {
-    method,
-    url,
-    body,
-    createdAt: new Date().toISOString(),
-    retries: 0,
-  })
+// Agregar petición pendiente
+export async function addPendingRequest(url: string, method: string, body: unknown) {
+  try {
+    const database = await getDB()
+    await database.add('pendingRequests', { url, method, body, timestamp: Date.now() })
+  } catch { /* ignorar */ }
 }
 
-// ------- Obtener todos los pendientes -------
+// Obtener peticiones pendientes
 export async function getPendingRequests() {
-  const database = await getDB()
-  return database.getAll('pendingRequests')
+  try {
+    const database = await getDB()
+    return await database.getAll('pendingRequests')
+  } catch {
+    return []
+  }
 }
 
-// ------- Eliminar un pendiente (ya sincronizado) -------
-export async function deletePendingRequest(id: number): Promise<void> {
-  const database = await getDB()
-  await database.delete('pendingRequests', id)
+// Limpiar peticiones pendientes
+export async function clearPendingRequests() {
+  try {
+    const database = await getDB()
+    await database.clear('pendingRequests')
+  } catch { /* ignorar */ }
 }

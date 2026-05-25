@@ -1,5 +1,7 @@
+'use client'
 import { useEffect } from 'react'
 import { useUIStore } from '@/store/uiStore'
+import { sincronizarPendientes } from '@/lib/offline/syncManager'
 
 export function useOfflineStatus() {
   const { isOnline, setOnline } = useUIStore()
@@ -7,7 +9,19 @@ export function useOfflineStatus() {
   useEffect(() => {
     setOnline(navigator.onLine)
 
-    const handleOnline  = () => setOnline(true)
+    const handleOnline = async () => {
+      setOnline(true)
+      // Sincronizar peticiones pendientes al volver online
+      try {
+        const sincronizados = await sincronizarPendientes()
+        if (sincronizados > 0) {
+          console.log(`${sincronizados} cambios sincronizados`)
+          // Recargar la página para mostrar datos actualizados
+          window.location.reload()
+        }
+      } catch { /* ignorar errores de sincronización */ }
+    }
+
     const handleOffline = () => setOnline(false)
 
     window.addEventListener('online',  handleOnline)
