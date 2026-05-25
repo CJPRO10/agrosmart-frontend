@@ -1,40 +1,86 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
+import { useOfflineStatus } from '@/hooks/useOfflineStatus'
+import { cacheData } from '@/lib/offline/db'
+import { siembrasApi, cultivosApi, estadosCultivoApi } from '@/lib/api/siembras'
+import { fincasApi } from '@/lib/api/fincas'
+import { tareasApi } from '@/lib/api/tareas'
+import { anomaliasApi } from '@/lib/api/anomalias'
+import { recomendacionesApi } from '@/lib/api/recomendaciones'
+import { notificacionesApi } from '@/lib/api/notificaciones'
 
 export default function InicioPage() {
   const { user } = useAuthStore()
+  const isOnline = useOfflineStatus()
 
-  const hora = new Date().getHours()
+  const hora   = new Date().getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
   const nombre = user?.nombreCompleto?.split(' ')[0] ?? ''
-  const rol = user?.rol ?? ''
+  const rol    = user?.rol ?? ''
 
-  // Accesos rápidos según rol
+  // Precargar y cachear TODOS los datos al entrar al inicio
+  // Así están disponibles offline en cualquier página
+  useEffect(() => {
+    if (!isOnline) return
+    const precargar = async () => {
+      try {
+        const [s, f, t, a, r, n, c, e] = await Promise.allSettled([
+          siembrasApi.listar(),
+          fincasApi.listar(),
+          tareasApi.listar(),
+          anomaliasApi.listar(),
+          recomendacionesApi.listar(),
+          notificacionesApi.listar(),
+          cultivosApi.listar(),
+          estadosCultivoApi.listar(),
+        ])
+        // Guardar en IndexedDB solo los que resultaron exitosos
+        const guardar = async (resultado: PromiseSettledResult<unknown>, store: string) => {
+          if (resultado.status === 'fulfilled' && Array.isArray(resultado.value)) {
+            await cacheData(store, resultado.value)
+          }
+        }
+        await Promise.all([
+          guardar(s, 'siembras'),
+          guardar(f, 'fincas'),
+          guardar(t, 'tareas'),
+          guardar(a, 'anomalias'),
+          guardar(r, 'recomendaciones'),
+          guardar(n, 'notificaciones'),
+          guardar(c, 'cultivos'),
+          guardar(e, 'estados'),
+        ])
+      } catch { /* silencioso — no interrumpir la UI */ }
+    }
+    precargar()
+  }, [isOnline])
+
   const accesosRapidos: Record<string, { label: string; icon: string; href: string; color: string }[]> = {
     PRODUCTOR: [
-      { label:'Mis Cultivos',   icon:'potted_plant',   href:'/cultivos',         color:'var(--color-primary)'   },
-      { label:'Mis Tareas',     icon:'assignment',     href:'/tareas',           color:'var(--color-secondary)' },
-      { label:'Problemas',      icon:'bug_report',     href:'/anomalias',        color:'var(--color-error)'     },
-      { label:'Consejos',       icon:'lightbulb',      href:'/recomendaciones',  color:'var(--color-tertiary)'  },
-      { label:'El Clima',       icon:'cloudy_snowing', href:'/clima',            color:'var(--color-secondary)' },
-      { label:'Mis Finanzas',   icon:'payments',       href:'/finanzas',         color:'var(--color-primary)'   },
+      { label:'Mis Cultivos',  icon:'potted_plant',    href:'/cultivos',        color:'var(--color-primary)'   },
+      { label:'Mis Tareas',    icon:'assignment',      href:'/tareas',          color:'var(--color-secondary)' },
+      { label:'Problemas',     icon:'bug_report',      href:'/anomalias',       color:'var(--color-error)'     },
+      { label:'Consejos',      icon:'lightbulb',       href:'/recomendaciones', color:'var(--color-tertiary)'  },
+      { label:'El Clima',      icon:'cloudy_snowing',  href:'/clima',           color:'var(--color-secondary)' },
+      { label:'Mis Finanzas',  icon:'payments',        href:'/finanzas',        color:'var(--color-primary)'   },
     ],
     OPERARIO: [
-      { label:'Mis Cultivos',   icon:'potted_plant',   href:'/cultivos',         color:'var(--color-primary)'   },
-      { label:'Mis Tareas',     icon:'assignment',     href:'/tareas',           color:'var(--color-secondary)' },
-      { label:'Problemas',      icon:'bug_report',     href:'/anomalias',        color:'var(--color-error)'     },
-      { label:'El Clima',       icon:'cloudy_snowing', href:'/clima',            color:'var(--color-secondary)' },
+      { label:'Mis Cultivos',  icon:'potted_plant',    href:'/cultivos',        color:'var(--color-primary)'   },
+      { label:'Mis Tareas',    icon:'assignment',      href:'/tareas',          color:'var(--color-secondary)' },
+      { label:'Problemas',     icon:'bug_report',      href:'/anomalias',       color:'var(--color-error)'     },
+      { label:'El Clima',      icon:'cloudy_snowing',  href:'/clima',           color:'var(--color-secondary)' },
     ],
     AUXILIAR: [
-      { label:'Mis Cultivos',   icon:'potted_plant',   href:'/cultivos',         color:'var(--color-primary)'   },
-      { label:'Mis Tareas',     icon:'assignment',     href:'/tareas',           color:'var(--color-secondary)' },
-      { label:'Problemas',      icon:'bug_report',     href:'/anomalias',        color:'var(--color-error)'     },
-      { label:'Consejos',       icon:'lightbulb',      href:'/recomendaciones',  color:'var(--color-tertiary)'  },
+      { label:'Mis Cultivos',  icon:'potted_plant',    href:'/cultivos',        color:'var(--color-primary)'   },
+      { label:'Mis Tareas',    icon:'assignment',      href:'/tareas',          color:'var(--color-secondary)' },
+      { label:'Problemas',     icon:'bug_report',      href:'/anomalias',       color:'var(--color-error)'     },
+      { label:'Consejos',      icon:'lightbulb',       href:'/recomendaciones', color:'var(--color-tertiary)'  },
     ],
     ADMINISTRADOR: [
-      { label:'Usuarios',       icon:'manage_accounts', href:'/usuarios',        color:'var(--color-primary)'   },
+      { label:'Usuarios',      icon:'manage_accounts', href:'/usuarios',        color:'var(--color-primary)'   },
     ],
   }
 
@@ -51,22 +97,25 @@ export default function InicioPage() {
     <div style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }} className="animate-fade-in">
 
       {/* Encabezado */}
-      <div className="card" style={{
-        background:'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%)',
-        color:'white', padding:'28px'
-      }}>
+      <div className="card" style={{ background:'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%)', color:'white', padding:'28px' }}>
         <p style={{ fontSize:'0.875rem', opacity:0.8, margin:'0 0 4px' }}>{saludo},</p>
         <h1 style={{ fontSize:'1.75rem', fontWeight:700, margin:'0 0 8px' }}>{nombre}</h1>
         <p style={{ fontSize:'0.9rem', opacity:0.85, margin:0 }}>{ROL_MSG[rol]}</p>
         <p style={{ fontSize:'0.75rem', opacity:0.7, margin:'8px 0 0' }}>
           {new Date().toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
         </p>
+        {!isOnline && (
+          <div style={{ marginTop:'12px', padding:'6px 12px', borderRadius:'8px', backgroundColor:'rgba(255,255,255,0.15)', fontSize:'0.75rem', display:'flex', alignItems:'center', gap:'6px' }}>
+            <span className="material-symbols-outlined" style={{fontSize:'16px'}}>wifi_off</span>
+            Modo offline — mostrando datos guardados
+          </div>
+        )}
       </div>
 
       {/* Accesos rápidos */}
       <div>
         <h2 style={{ fontSize:'1rem', fontWeight:600, color:'var(--color-on-surface)', margin:'0 0 12px' }}>Accesos rápidos</h2>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px,1fr))', gap:'12px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(150px,1fr))', gap:'12px' }}>
           {accesos.map(acc => (
             <Link key={acc.href} href={acc.href} style={{ textDecoration:'none' }}>
               <div className="card" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', padding:'20px 16px', textAlign:'center', cursor:'pointer', transition:'box-shadow 0.2s' }}
@@ -94,7 +143,6 @@ export default function InicioPage() {
           </div>
         </div>
       )}
-
       {rol === 'OPERARIO' && (
         <div className="card" style={{ display:'flex', alignItems:'center', gap:'16px' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'32px', color:'var(--color-secondary-fixed)', flexShrink:0 }}>assignment_turned_in</span>
@@ -106,7 +154,6 @@ export default function InicioPage() {
           </div>
         </div>
       )}
-
       {rol === 'AUXILIAR' && (
         <div className="card" style={{ display:'flex', alignItems:'center', gap:'16px' }}>
           <span className="material-symbols-outlined" style={{ fontSize:'32px', color:'var(--color-tertiary-fixed)', flexShrink:0 }}>support_agent</span>

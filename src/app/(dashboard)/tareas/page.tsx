@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getCachedData, cacheData } from '@/lib/offline/db'
+import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { tareasApi } from '@/lib/api/tareas'
 import { siembrasApi, tiposTareaApi } from '@/lib/api/siembras'
 import { usuariosApi } from '@/lib/api/usuarios'
@@ -55,35 +57,51 @@ export default function TareasPage() {
     descripcion: string; fechaLimite: string; idSiembra: number; idTipoTarea: number
   }>(FORM_INICIAL)
 
+  const isOnline = useOfflineStatus()
+
   useEffect(() => {
     let cancelado = false
     const cargar = async () => {
       setLoading(true)
       try {
-        const [t, s, tt] = await Promise.all([
-          tareasApi.listar(),
-          siembrasApi.listar(),
-          tiposTareaApi.listar(),
-        ])
-        if (!cancelado) {
-          setTareas(Array.isArray(t) ? t : [])
-          setSiembras(Array.isArray(s) ? s : [])
-          setTiposTarea(Array.isArray(tt) ? tt : [])
+        if (isOnline) {
+          const [t, s, tt] = await Promise.all([
+            tareasApi.listar(),
+            siembrasApi.listar(),
+            tiposTareaApi.listar(),
+          ])
+          if (!cancelado) {
+            setTareas(Array.isArray(t) ? t : [])
+            setSiembras(Array.isArray(s) ? s : [])
+            setTiposTarea(Array.isArray(tt) ? tt : [])
+            await cacheData('tareas', Array.isArray(t) ? t : [])
+            await cacheData('siembras', Array.isArray(s) ? s : [])
+          }
+          try {
+            const p = await usuariosApi.listar()
+            if (!cancelado) setPersonal(Array.isArray(p) ? p.filter(u => u.rol === 'OPERARIO' || u.rol === 'AUXILIAR') : [])
+          } catch { /* sin personal */ }
+        } else {
+          const [t, s] = await Promise.all([
+            getCachedData('tareas'),
+            getCachedData('siembras'),
+          ])
+          if (!cancelado) {
+            setTareas(t as never[])
+            setSiembras(s as never[])
+          }
         }
-        // Personal por separado
-        try {
-          const p = await usuariosApi.listar()
-          if (!cancelado) setPersonal(Array.isArray(p) ? p.filter(u => u.rol === 'OPERARIO' || u.rol === 'AUXILIAR') : [])
-        } catch { /* sin personal registrado aún */ }
       } catch {
-        if (!cancelado) setError('No se pudieron cargar las tareas.')
+        const t = await getCachedData('tareas')
+        if (!cancelado && t.length > 0) setTareas(t as never[])
+        else if (!cancelado) setError('No se pudieron cargar las tareas.')
       } finally {
         if (!cancelado) setLoading(false)
       }
     }
     cargar()
     return () => { cancelado = true }
-  }, [])
+  }, [isOnline])
 
   const recargar = async () => {
     try { const t = await tareasApi.listar(); setTareas(Array.isArray(t) ? t : []) }
@@ -107,10 +125,6 @@ export default function TareasPage() {
     e.preventDefault()
     if (!form.idSiembra || !form.idTipoTarea || !form.fechaLimite) {
       setError('Completa todos los campos requeridos.')
-      return
-    }
-    if (!navigator.onLine) {
-      setError('Sin conexión. Conéctate a internet para guardar cambios.')
       return
     }
     setSaving(true)
@@ -259,8 +273,7 @@ export default function TareasPage() {
             const cfg = ESTADO_CONFIG[estadoActual] ?? ESTADO_CONFIG['PENDIENTE']
             const vencida = tarea.fechaLimite && new Date(parseFecha(tarea.fechaLimite)) < new Date() && estadoActual !== 'COMPLETADA'
             const asignacion = tarea.asignaciones?.[0]
-            const asignado = (asignacion as unknown as { operarioAsignado?: string; auxiliarAsignado?: string })?.operarioAsignado 
-               ?? (asignacion as unknown as { operarioAsignado?: string; auxiliarAsignado?: string })?.auxiliarAsignado
+            const asignado   = asignacion?.operarioAsignado ?? asignacion?.auxiliarAsignado
 
             return (
               <div key={tarea.idTarea} className="card" style={{ display:'flex', alignItems:'flex-start', gap:'16px', padding:'16px', borderLeft:`4px solid ${cfg.color}` }}>
