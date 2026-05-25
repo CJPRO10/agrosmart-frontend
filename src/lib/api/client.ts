@@ -9,7 +9,12 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 15_000,
   headers: { 'Content-Type': 'application/json' },
 })
-
+apiClient.interceptors.request.use((config) => {
+  if (!navigator.onLine) {
+    return Promise.reject(new Error('Sin conexión a internet'))
+  }
+  return config
+})
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {

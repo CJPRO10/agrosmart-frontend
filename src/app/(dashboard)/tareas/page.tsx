@@ -109,6 +109,10 @@ export default function TareasPage() {
       setError('Completa todos los campos requeridos.')
       return
     }
+    if (!navigator.onLine) {
+      setError('Sin conexión. Conéctate a internet para guardar cambios.')
+      return
+    }
     setSaving(true)
     try {
       const req: TareaRequest = {
