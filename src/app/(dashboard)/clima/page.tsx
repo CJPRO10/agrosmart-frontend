@@ -6,6 +6,7 @@ import { fincasApi } from '@/lib/api/fincas'
 import { recomendacionesApi } from '@/lib/api/recomendaciones'
 import type { ClimaResponse, DiaPronostico, PronosticoResponse } from '@/lib/api/clima'
 import type { Finca } from '@/types'
+import { siembrasApi } from '@/lib/api/siembras'
 
 const CONDICION_ICON: Record<string, string> = {
   'despejado':   'wb_sunny',
@@ -110,15 +111,18 @@ export default function ClimaPage() {
     setGenerandoRec(true)
     setRecGenerada(null)
     try {
-      // Solicitar recomendación basada en las condiciones climáticas actuales
+      // Usar la primera siembra disponible, o hacer solicitud sin siembra
+      const siembrasData = await siembrasApi.listar()
+      const idSiembra = siembrasData?.[0]?.idSiembra ?? 1
+
       const rec = await recomendacionesApi.solicitar({
-        idSiembra: 0,
-       descripcionSolicitud: `Condiciones actuales: ${climaActual.condicion}, ${climaActual.temperatura}°C, precipitación ${climaActual.precipitacion}mm en ${climaActual.nombreUbicacion}. ¿Qué acciones debo tomar?`,
+        idSiembra,
+        descripcionSolicitud: `Condiciones actuales en ${climaActual.nombreUbicacion}: ${climaActual.condicion}, temperatura ${climaActual.temperatura}°C, precipitación ${climaActual.precipitacion}mm. ¿Qué acciones agrícolas debo tomar?`,
         categoria: 'CLIMA',
       })
       setRecGenerada(rec.descripcion ?? 'Recomendación generada exitosamente.')
     } catch {
-      setError('Error al generar la recomendación climática.')
+      setError('Error al generar la recomendación climática. Asegúrate de tener cultivos registrados.')
     } finally {
       setGenerandoRec(false)
     }
