@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'   // ← useState faltaba
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
@@ -10,9 +10,7 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuthStore()
   const [hidratado, setHidratado] = useState(false)
 
-  useEffect(() => {
-    setHidratado(true)
-  }, [])
+  useEffect(() => { setHidratado(true) }, [])
 
   useEffect(() => {
     if (hidratado && isAuthenticated) router.push('/inicio')
@@ -24,20 +22,16 @@ export default function LandingPage() {
     <div style={{ minHeight:'100vh', backgroundColor:'#0a1f0a', color:'white', fontFamily:'Arial, sans-serif', overflowX:'hidden' }}>
 
       {/* Navbar */}
-      <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 48px', backgroundColor:'rgba(10,31,10,0.85)', backdropFilter:'blur(12px)', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <span style={{ fontSize:'28px' }}>🌱</span>
-          <span style={{ fontSize:'1.25rem', fontWeight:800, color:'#7EC850', letterSpacing:'-0.5px' }}>AgroSmart</span>
+      <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px', backgroundColor:'rgba(10,31,10,0.92)', backdropFilter:'blur(12px)', borderBottom:'1px solid rgba(255,255,255,0.08)', boxSizing:'border-box' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'8px', flexShrink:0 }}>
+          <span style={{ fontSize:'24px' }}>🌱</span>
+          <span style={{ fontSize:'1.1rem', fontWeight:800, color:'#7EC850', letterSpacing:'-0.5px' }}>AgroSmart</span>
         </div>
-        <div style={{ display:'flex', gap:'12px', alignItems:'center' }}>
-          <Link href="/login" style={{ padding:'10px 24px', borderRadius:'8px', color:'rgba(255,255,255,0.85)', textDecoration:'none', fontSize:'0.9rem', fontWeight:500, border:'1px solid rgba(255,255,255,0.2)', transition:'all 0.2s' }}
-            onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.backgroundColor='rgba(255,255,255,0.08)'}}
-            onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.backgroundColor='transparent'}}>
+        <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+          <Link href="/login" style={{ padding:'8px 16px', borderRadius:'8px', color:'rgba(255,255,255,0.85)', textDecoration:'none', fontSize:'0.85rem', fontWeight:500, border:'1px solid rgba(255,255,255,0.2)', whiteSpace:'nowrap' }}>
             Iniciar Sesión
           </Link>
-          <Link href="/registro" style={{ padding:'10px 24px', borderRadius:'8px', backgroundColor:'#4CAF50', color:'white', textDecoration:'none', fontSize:'0.9rem', fontWeight:700, transition:'all 0.2s' }}
-            onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.backgroundColor='#388E3C'}}
-            onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.backgroundColor='#4CAF50'}}>
+          <Link href="/registro" style={{ padding:'8px 16px', borderRadius:'8px', backgroundColor:'#4CAF50', color:'white', textDecoration:'none', fontSize:'0.85rem', fontWeight:700, whiteSpace:'nowrap' }}>
             Registrarse
           </Link>
         </div>
@@ -45,6 +39,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={{ minHeight:'100vh', display:'flex', alignItems:'center', padding:'120px 48px 80px', position:'relative', overflow:'hidden' }}>
+        {/* Fondo decorativo */}
         <div style={{ position:'absolute', inset:0, backgroundImage:'url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80")', backgroundSize:'cover', backgroundPosition:'center', opacity:0.15 }} />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, rgba(10,31,10,0.98) 0%, rgba(10,31,10,0.7) 50%, rgba(10,31,10,0.5) 100%)' }} />
 
@@ -100,6 +95,7 @@ export default function LandingPage() {
               Diseñado para productores rurales con conectividad limitada. Funciona incluso sin internet.
             </p>
           </div>
+
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'24px' }}>
             {[
               { icon:'🌾', titulo:'Gestión de Cultivos',    desc:'Registra siembras, monitorea estados y recibe alertas de plagas en tiempo real.' },
@@ -133,8 +129,9 @@ export default function LandingPage() {
               { num:'01', titulo:'Regístrate',        desc:'Crea tu perfil en minutos. Solo necesitas tus datos básicos y los de tu finca.' },
               { num:'02', titulo:'Agrega tu finca',   desc:'Geolocaliza tus predios y define el tipo de cultivo. Carga automática de datos climáticos.' },
               { num:'03', titulo:'Monitorea y actúa', desc:'Recibe alertas en tiempo real sobre plagas, riego y clima. Toma decisiones basadas en datos.' },
-            ].map(p => (
-              <div key={p.num} style={{ padding:'32px 24px', borderRadius:'16px', backgroundColor:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)' }}>
+            ].map((p, i) => (
+              <div key={p.num} style={{ position:'relative', padding:'32px 24px', borderRadius:'16px', backgroundColor:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)' }}>
+                {i < 2 && <div style={{ position:'absolute', top:'50%', right:'-16px', width:'32px', height:'2px', backgroundColor:'rgba(76,175,80,0.4)', display:'none' }} />}
                 <div style={{ fontSize:'3rem', fontWeight:900, color:'rgba(76,175,80,0.3)', lineHeight:1, marginBottom:'16px' }}>{p.num}</div>
                 <h3 style={{ fontSize:'1.1rem', fontWeight:700, margin:'0 0 10px' }}>{p.titulo}</h3>
                 <p style={{ fontSize:'0.875rem', color:'rgba(255,255,255,0.6)', margin:0, lineHeight:1.6 }}>{p.desc}</p>
@@ -179,9 +176,9 @@ export default function LandingPage() {
           </div>
           <div style={{ display:'flex', gap:'24px' }}>
             {[
-              { label:'Privacidad',     href:'#' },
+              { label:'Privacidad', href:'#' },
               { label:'Términos de Uso', href:'#' },
-              { label:'Soporte',        href:'#' },
+              { label:'Soporte', href:'#' },
             ].map(l => (
               <Link key={l.label} href={l.href} style={{ color:'rgba(255,255,255,0.4)', textDecoration:'none', fontSize:'0.8rem', transition:'color 0.2s' }}
                 onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.color='#7EC850'}}
@@ -192,7 +189,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
     </div>
   )
 }
