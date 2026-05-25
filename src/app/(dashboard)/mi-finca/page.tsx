@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getCachedData, cacheData } from '@/lib/offline/db'
+import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { fincasApi } from '@/lib/api/fincas'
 import { ubicacionesApi } from '@/lib/api/ubicaciones'
 import dynamic from 'next/dynamic'
@@ -39,23 +41,35 @@ export default function MiFincaPage() {
   const [coordenadas, setCoordenadas]     = useState<{ lat: number; lng: number; nombre: string } | null>(null)
 
   // Carga inicial
+  const isOnline = useOfflineStatus()
+
   useEffect(() => {
     let cancelado = false
     const cargar = async () => {
       setLoading(true)
       setError(null)
       try {
-        const data = await fincasApi.listar()
-        if (!cancelado) setFincas(data)
+        if (isOnline) {
+          const data = await fincasApi.listar()
+          if (!cancelado) {
+            setFincas(data)
+            await cacheData('fincas', Array.isArray(data) ? data : [])
+          }
+        } else {
+          const data = await getCachedData('fincas')
+          if (!cancelado) setFincas(data as never[])
+        }
       } catch {
-        if (!cancelado) setError('No se pudieron cargar las fincas. Verifica la conexión con el servidor.')
+        const cached = await getCachedData('fincas')
+        if (!cancelado && cached.length > 0) setFincas(cached as never[])
+        else if (!cancelado) setError('No se pudieron cargar las fincas.')
       } finally {
         if (!cancelado) setLoading(false)
       }
     }
     cargar()
     return () => { cancelado = true }
-  }, [])
+  }, [isOnline])
 
   // Recarga después de crear/editar/eliminar
   const cargarFincas = async () => {
@@ -94,10 +108,6 @@ export default function MiFincaPage() {
 
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!navigator.onLine) {
-      setError('Sin conexión. Conéctate a internet para guardar cambios.')
-      return
-    }
     if (modalMode === 'crear' && !coordenadas) {
       setError('Selecciona la ubicación en el mapa.')
       return

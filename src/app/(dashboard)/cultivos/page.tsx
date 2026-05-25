@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getCachedData, cacheData } from '@/lib/offline/db'
+import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { siembrasApi, cultivosApi, estadosCultivoApi } from '@/lib/api/siembras'
 import { fincasApi } from '@/lib/api/fincas'
 import type { SiembraResponse, SiembraRequest, SiembraUpdateRequest, CultivoResponse, EstadoCultivo } from '@/lib/api/siembras'
@@ -44,13 +46,12 @@ const FORM_EDITAR_INICIAL: SiembraUpdateRequest = {
   idFinca: 0, idCultivo: 0, numLote: 1,
 }
 
+// Convierte fechas que vienen como array [2026,5,24,...] o string ISO
 function parseFecha(fecha: unknown): string {
   if (!fecha) return ''
   if (Array.isArray(fecha)) {
-    const [y, m, d, h = 0, min = 0, s = 0] = fecha as number[]
-    // Construye string ISO — mes en JS es 0-indexed así que restamos 1
-    const date = new Date(y, m - 1, d, h, min, s)
-    return date.toISOString()
+    const [y, m, d] = fecha as number[]
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`
   }
   return String(fecha)
 }
@@ -67,12 +68,6 @@ export default function CultivosPage() {
   const [saving, setSaving]               = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<SiembraResponse | null>(null)
   const [filtroFinca, setFiltroFinca]     = useState<number>(0)
-  const [busqueda, setBusqueda]         = useState('')
-  const [filtroEstado, setFiltroEstado] = useState('')
-  const [filtroTipo, setFiltroTipo]     = useState('')
-  const [fechaDesde, setFechaDesde]     = useState('')
-  const [fechaHasta, setFechaHasta]     = useState('')
-  const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [cambiarEstadoModal, setCambiarEstadoModal] = useState<SiembraResponse | null>(null)
   const [nuevoEstadoId, setNuevoEstadoId]           = useState<number>(1)
   const [cambiandoEstado, setCambiandoEstado]       = useState(false)
@@ -83,36 +78,32 @@ export default function CultivosPage() {
     let cancelado = false
     const cargar = async () => {
       setLoading(true)
-
-      // Siembras — esencial
       try {
-        const s = await siembrasApi.listar()
-        if (!cancelado) setSiembras(Array.isArray(s) ? s : [])
+        const [s, c, f] = await Promise.all([
+          siembrasApi.listar(),
+          cultivosApi.listar(),
+          fincasApi.listar(),
+        ])
+        if (!cancelado) {
+          setSiembras(Array.isArray(s) ? s : [])
+          setCultivos(Array.isArray(c) ? c : [])
+          setFincas(Array.isArray(f) ? f : [])
+        }
+        // Estados por separado para no bloquear si falla
+        try {
+          const e = await estadosCultivoApi.listar()
+          if (!cancelado && Array.isArray(e) && e.length > 0) {
+            setEstados(e)
+          }
+        } catch {
+          // Si falla usa los default que ya están en el estado
+          console.warn('No se cargaron estados del API, usando valores por defecto')
+        }
       } catch {
         if (!cancelado) setError('No se pudieron cargar los cultivos.')
+      } finally {
         if (!cancelado) setLoading(false)
-        return
       }
-
-      // Catálogo de cultivos — opcional
-      try {
-        const c = await cultivosApi.listar()
-        if (!cancelado) setCultivos(Array.isArray(c) ? c : [])
-      } catch { /* sin catálogo */ }
-
-      // Fincas — solo PRODUCTOR tiene acceso, para OPERARIO/AUXILIAR simplemente no filtra
-      try {
-        const f = await fincasApi.listar()
-        if (!cancelado) setFincas(Array.isArray(f) ? f : [])
-      } catch { /* operario no tiene acceso a /api/fincas */ }
-
-      // Estados de cultivo — usa default si falla
-      try {
-        const e = await estadosCultivoApi.listar()
-        if (!cancelado && Array.isArray(e) && e.length > 0) setEstados(e)
-      } catch { /* usa ESTADOS_DEFAULT */ }
-
-      if (!cancelado) setLoading(false)
     }
     cargar()
     return () => { cancelado = true }
@@ -123,17 +114,9 @@ export default function CultivosPage() {
     catch { setError('Error al recargar.') }
   }
 
-  const siembrasFiltradas = siembras.filter(s => {
-    const matchFinca   = !filtroFinca || s.nombreFinca === fincas.find(f => f.idFinca === filtroFinca)?.nombreFinca
-    const matchBusqueda = !busqueda ||
-      s.nombreCultivo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      s.nombreFinca?.toLowerCase().includes(busqueda.toLowerCase())
-    const matchEstado  = !filtroEstado || s.nombreEstado?.toUpperCase() === filtroEstado.toUpperCase()
-    const matchTipo    = !filtroTipo   || cultivos.find(c => c.nombre === s.nombreCultivo)?.nombreTipoCultivo === filtroTipo
-    const matchDesde   = !fechaDesde   || new Date(parseFecha(s.fechaSiembra)) >= new Date(fechaDesde)
-    const matchHasta   = !fechaHasta   || new Date(parseFecha(s.fechaSiembra)) <= new Date(fechaHasta)
-    return matchFinca && matchBusqueda && matchEstado && matchTipo && matchDesde && matchHasta
-  })
+  const siembrasFiltradas = filtroFinca
+    ? siembras.filter(s => s.nombreFinca === fincas.find(f => f.idFinca === filtroFinca)?.nombreFinca)
+    : siembras
 
   const abrirCrear = () => {
     setFormCrear({
@@ -168,10 +151,6 @@ export default function CultivosPage() {
 
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!navigator.onLine) {
-      setError('Sin conexión. Conéctate a internet para guardar cambios.')
-      return
-    }
     setSaving(true)
     setError(null)
     try {
@@ -222,91 +201,20 @@ export default function CultivosPage() {
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, color:'var(--color-primary)', margin:0 }}>Mis Cultivos</h1>
           <p style={{ fontSize:'0.875rem', color:'var(--color-on-surface-variant)', marginTop:'4px' }}>
-            {siembrasFiltradas.length} de {siembras.length} siembra{siembras.length !== 1 ? 's' : ''}
+            {siembras.length} siembra{siembras.length !== 1 ? 's' : ''} registrada{siembras.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
-          <button onClick={() => setMostrarFiltros(v => !v)} className="btn-secondary" style={{ minHeight:'40px' }}>
-            <span className="material-symbols-outlined" style={{fontSize:'20px'}}>tune</span>
-            Filtros {(filtroEstado || filtroTipo || filtroFinca || fechaDesde || fechaHasta) ? '●' : ''}
-          </button>
+          <select value={filtroFinca} onChange={e => setFiltroFinca(Number(e.target.value))}
+            className="input-field" style={{ minHeight:'40px', padding:'8px 12px', width:'auto' }}>
+            <option value={0}>Todas las fincas</option>
+            {fincas.map(f => <option key={f.idFinca} value={f.idFinca}>{f.nombreFinca}</option>)}
+          </select>
           <button onClick={abrirCrear} className="btn-primary" style={{ whiteSpace:'nowrap' }}>
             <span className="material-symbols-outlined" style={{fontSize:'20px'}}>add</span>
             Nuevo Cultivo
           </button>
         </div>
-      </div>
-
-      {/* Búsqueda y filtros */}
-      <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
-        {/* Barra de búsqueda */}
-        <div style={{ position:'relative' }}>
-          <span className="material-symbols-outlined" style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)' }}>search</span>
-          <input
-            type="text" value={busqueda} onChange={e => setBusqueda(e.target.value)}
-            placeholder="Buscar por nombre de cultivo o finca..."
-            className="input-field" style={{ paddingLeft:'40px' }}
-          />
-        </div>
-
-        {/* Panel de filtros expandible */}
-        {mostrarFiltros && (
-          <div className="card animate-fade-in" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px,1fr))', gap:'12px', padding:'16px' }}>
-            {/* Filtro por finca */}
-            <div>
-              <label className="input-label">Finca</label>
-              <select value={filtroFinca} onChange={e => setFiltroFinca(Number(e.target.value))}
-                className="input-field" style={{ minHeight:'40px' }}>
-                <option value={0}>Todas las fincas</option>
-                {fincas.map(f => <option key={f.idFinca} value={f.idFinca}>{f.nombreFinca}</option>)}
-              </select>
-            </div>
-
-            {/* Filtro por estado */}
-            <div>
-              <label className="input-label">Estado</label>
-              <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
-                className="input-field" style={{ minHeight:'40px' }}>
-                <option value="">Todos los estados</option>
-                {estados.map(e => <option key={e.idEstadoCultivo} value={e.nombre}>{e.nombre}</option>)}
-              </select>
-            </div>
-
-            {/* Filtro por tipo de cultivo */}
-            <div>
-              <label className="input-label">Tipo de cultivo</label>
-              <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
-                className="input-field" style={{ minHeight:'40px' }}>
-                <option value="">Todos los tipos</option>
-                {[...new Set(cultivos.map(c => c.nombreTipoCultivo))].map(tipo => (
-                  <option key={tipo} value={tipo}>{tipo}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Rango de fechas */}
-            <div>
-              <label className="input-label">Fecha siembra desde</label>
-              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
-                className="input-field" style={{ minHeight:'40px' }} />
-            </div>
-            <div>
-              <label className="input-label">Fecha siembra hasta</label>
-              <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)}
-                className="input-field" style={{ minHeight:'40px' }} />
-            </div>
-
-            {/* Limpiar filtros */}
-            <div style={{ display:'flex', alignItems:'flex-end' }}>
-              <button
-                onClick={() => { setFiltroFinca(0); setFiltroEstado(''); setFiltroTipo(''); setFechaDesde(''); setFechaHasta(''); setBusqueda('') }}
-                className="btn-secondary" style={{ width:'100%', minHeight:'40px' }}>
-                <span className="material-symbols-outlined" style={{fontSize:'18px'}}>filter_alt_off</span>
-                Limpiar
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Error */}

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getCachedData, cacheData } from '@/lib/offline/db'
+import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { anomaliasApi } from '@/lib/api/anomalias'
 import { siembrasApi } from '@/lib/api/siembras'
 import type { SiembraResponse } from '@/lib/api/siembras'
-import { formatFechaCorta } from '@/lib/utils/fecha'
 
 type TipoAnomalia  = 'PLAGA' | 'ENFERMEDAD' | 'CLIMATICA' | 'OTRA'
 type EstadoAnomalia = 'ACTIVA' | 'EN_SEGUIMIENTO' | 'RESUELTA'
@@ -59,25 +60,44 @@ export default function AnomaliasPage() {
   const [confirmDelete, setConfirmDelete] = useState<AnomaliaBackend | null>(null)
   const [filtroEstado, setFiltroEstado]   = useState<EstadoAnomalia | 'TODAS'>('TODAS')
   const [busqueda, setBusqueda]           = useState('')
-  const [success, setSuccess] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>(FORM_INICIAL)
+
+  const isOnline = useOfflineStatus()
 
   useEffect(() => {
     let cancelado = false
     const cargar = async () => {
       setLoading(true)
       try {
-        const [a, s] = await Promise.all([anomaliasApi.listar(), siembrasApi.listar()])
-        if (!cancelado) { setAnomalias(a as unknown as AnomaliaBackend[]); setSiembras(s) }
+        if (isOnline) {
+          const [a, s] = await Promise.all([anomaliasApi.listar(), siembrasApi.listar()])
+          if (!cancelado) {
+            setAnomalias(a as unknown as AnomaliaBackend[])
+            setSiembras(s)
+            await cacheData('anomalias', Array.isArray(a) ? a : [])
+            await cacheData('siembras', Array.isArray(s) ? s : [])
+          }
+        } else {
+          const [a, s] = await Promise.all([
+            getCachedData('anomalias'),
+            getCachedData('siembras'),
+          ])
+          if (!cancelado) {
+            setAnomalias(a as unknown as AnomaliaBackend[])
+            setSiembras(s as never[])
+          }
+        }
       } catch {
-        if (!cancelado) setError('No se pudieron cargar las anomalías.')
+        const a = await getCachedData('anomalias')
+        if (!cancelado && a.length > 0) setAnomalias(a as unknown as AnomaliaBackend[])
+        else if (!cancelado) setError('No se pudieron cargar las anomalías.')
       } finally {
         if (!cancelado) setLoading(false)
       }
     }
     cargar()
     return () => { cancelado = true }
-  }, [])
+  }, [isOnline])
 
   const recargar = async () => {
     try { const a = await anomaliasApi.listar(); setAnomalias(a as unknown as AnomaliaBackend[]) }
@@ -99,28 +119,15 @@ export default function AnomaliasPage() {
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.idSiembra) { setError('Selecciona un cultivo.'); return }
-    if (!navigator.onLine) {
-      setError('Sin conexión. Conéctate a internet para guardar cambios.')
-      return
-    }
     setSaving(true)
     try {
-      if (editando) {
-        await anomaliasApi.actualizar(editando.idAnomalia, form as never)
-      } else {
-        await anomaliasApi.crear(form as never)
-      }
-      setModalOpen(false)
-      setEditando(null)
+      const req = { ...form, idSiembra: form.idSiembra, fechaDeteccion: new Date(form.fechaDeteccion).toISOString() }
+      if (editando) { await anomaliasApi.actualizar(editando.idAnomalia, req as never) }
+      else          { await anomaliasApi.crear(req as never) }
+      setModalOpen(false); setEditando(null)
       await recargar()
-      // RF33/34 — informar que se generó recomendación y alerta automáticamente
-      setSuccess('Anomalía guardada. Se generó una recomendación y alerta automáticamente.')
-      setTimeout(() => setSuccess(null), 5000)
-    } catch {
-      setError('Error al guardar la anomalía.')
-    } finally {
-      setSaving(false)
-    }
+    } catch { setError('Error al guardar la anomalía.') }
+    finally { setSaving(false) }
   }
 
   const handleEliminar = async (a: AnomaliaBackend) => {
@@ -187,21 +194,6 @@ export default function AnomaliasPage() {
         <button onClick={()=>setError(null)}><span className="material-symbols-outlined" style={{fontSize:'18px'}}>close</span></button>
       </div>}
 
-      {success && (
-        <div className="animate-fade-in" style={{
-          display:'flex', alignItems:'center', gap:'8px',
-          padding:'12px 16px', borderRadius:'8px',
-          backgroundColor:'var(--color-primary-fixed)',
-          color:'var(--color-primary)', fontSize:'0.875rem'
-        }}>
-          <span className="material-symbols-outlined" style={{fontSize:'20px'}}>check_circle</span>
-          <span style={{flex:1}}>{success}</span>
-          <button onClick={() => setSuccess(null)}>
-            <span className="material-symbols-outlined" style={{fontSize:'18px'}}>close</span>
-          </button>
-        </div>
-      )}
-
       {loading && <div style={{ display:'flex', justifyContent:'center', padding:'80px 0' }}><span className="material-symbols-outlined animate-spin" style={{ fontSize:'48px', color:'var(--color-primary)' }}>progress_activity</span></div>}
 
       {!loading && anomaliasFiltradas.length === 0 && !error && (
@@ -244,7 +236,7 @@ export default function AnomaliasPage() {
                     </span>
                     <span style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', display:'flex', alignItems:'center', gap:'2px' }}>
                       <span className="material-symbols-outlined" style={{fontSize:'14px'}}>calendar_today</span>
-                      {formatFechaCorta(a.fechaDeteccion)}
+                      {a.fechaDeteccion ? new Date(a.fechaDeteccion).toLocaleDateString('es-CO') : '--'}
                     </span>
                   </div>
                 </div>
