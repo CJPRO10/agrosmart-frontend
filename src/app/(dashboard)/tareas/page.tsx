@@ -65,22 +65,24 @@ export default function TareasPage() {
       setLoading(true)
       try {
         if (isOnline) {
-          const [t, s, tt] = await Promise.all([
-            tareasApi.listar(),
-            siembrasApi.listar(),
-            tiposTareaApi.listar(),
-          ])
-          if (!cancelado) {
-            setTareas(Array.isArray(t) ? t : [])
-            setSiembras(Array.isArray(s) ? s : [])
-            setTiposTarea(Array.isArray(tt) ? tt : [])
-            await cacheData('tareas', Array.isArray(t) ? t : [])
-            await cacheData('siembras', Array.isArray(s) ? s : [])
-          }
-          try {
-            const p = await usuariosApi.listar()
-            if (!cancelado) setPersonal(Array.isArray(p) ? p.filter(u => u.rol === 'OPERARIO' || u.rol === 'AUXILIAR') : [])
-          } catch { /* sin personal */ }
+          const [t, s] = await Promise.all([
+          tareasApi.listar(),
+          siembrasApi.listar(),
+        ])
+        if (!cancelado) {
+          setTareas(Array.isArray(t) ? t : [])
+          setSiembras(Array.isArray(s) ? s : [])
+          await cacheData('tareas', Array.isArray(t) ? t : [])
+          await cacheData('siembras', Array.isArray(s) ? s : [])
+        }
+        try {
+          const tt = await tiposTareaApi.listar()
+          if (!cancelado) setTiposTarea(Array.isArray(tt) ? tt : [])
+        } catch (e) { console.error('Tipos tarea:', e) }
+        try {
+          const p = await usuariosApi.listar()
+          if (!cancelado) setPersonal(Array.isArray(p) ? p.filter(u => u.rol === 'OPERARIO' || u.rol === 'AUXILIAR') : [])
+        } catch { /* sin personal */ }
         } else {
           const [t, s] = await Promise.all([
             getCachedData('tareas'),
