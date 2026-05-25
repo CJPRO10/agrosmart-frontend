@@ -6,7 +6,6 @@ import { fincasApi } from '@/lib/api/fincas'
 import { recomendacionesApi } from '@/lib/api/recomendaciones'
 import type { ClimaResponse, DiaPronostico, PronosticoResponse } from '@/lib/api/clima'
 import type { Finca } from '@/types'
-import { siembrasApi } from '@/lib/api/siembras'
 
 const CONDICION_ICON: Record<string, string> = {
   'despejado':   'wb_sunny',
@@ -111,18 +110,15 @@ export default function ClimaPage() {
     setGenerandoRec(true)
     setRecGenerada(null)
     try {
-      // Usar la primera siembra disponible, o hacer solicitud sin siembra
-      const siembrasData = await siembrasApi.listar()
-      const idSiembra = siembrasData?.[0]?.idSiembra ?? 1
-
+      // Solicitar recomendación basada en las condiciones climáticas actuales
       const rec = await recomendacionesApi.solicitar({
-        idSiembra,
-        descripcionSolicitud: `Condiciones actuales en ${climaActual.nombreUbicacion}: ${climaActual.condicion}, temperatura ${climaActual.temperatura}°C, precipitación ${climaActual.precipitacion}mm. ¿Qué acciones agrícolas debo tomar?`,
+        idSiembra: 0,
+        descripcionSolicitud: `Condiciones actuales: ${climaActual.condicion}, ${climaActual.temperatura}°C, precipitación ${climaActual.precipitacion}mm en ${climaActual.nombreUbicacion}. ¿Qué acciones debo tomar?`,
         categoria: 'CLIMA',
       })
       setRecGenerada(rec.descripcion ?? 'Recomendación generada exitosamente.')
     } catch {
-      setError('Error al generar la recomendación climática. Asegúrate de tener cultivos registrados.')
+      setError('Error al generar la recomendación climática.')
     } finally {
       setGenerandoRec(false)
     }
@@ -190,10 +186,10 @@ export default function ClimaPage() {
       {!loading && (
         <>
           {/* Clima actual + pronóstico 24h */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px,1fr))', gap:'1rem' }}>
 
             {/* Card clima actual */}
-            <div style={{ borderRadius:'16px', padding:'28px', background:'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%)', color:'white', position:'relative', overflow:'hidden' }}>
+            <div style={{ borderRadius:'16px', padding:'24px', background:'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%)', color:'white', position:'relative', overflow:'hidden', minWidth:0 }}>
               <div style={{ position:'absolute', top:'-20px', right:'-20px', opacity:0.15 }}>
                 <span className="material-symbols-outlined" style={{ fontSize:'140px' }}>{getIconClima(climaActual?.condicion)}</span>
               </div>
@@ -204,11 +200,11 @@ export default function ClimaPage() {
                     <span style={{ fontSize:'0.7rem', opacity:0.7 }}>· {new Date(climaActual.fechaMedicion).toLocaleDateString('es-CO')}</span>
                   )}
                 </div>
-                <p style={{ fontSize:'4rem', fontWeight:800, margin:'0 0 4px', lineHeight:1 }}>
-                  {climaActual?.temperatura ?? '--'}°<span style={{ fontSize:'2rem' }}>C</span>
+                <p style={{ fontSize:'3.5rem', fontWeight:800, margin:'0 0 4px', lineHeight:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  {climaActual?.temperatura ?? '--'}°<span style={{ fontSize:'1.75rem' }}>C</span>
                 </p>
                 <p style={{ fontSize:'1rem', opacity:0.9, margin:'0 0 20px' }}>{climaActual?.condicion ?? 'Sin datos'}</p>
-                <div style={{ display:'flex', gap:'20px', flexWrap:'wrap' }}>
+                <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
                   {[
                     { icon:'water_drop', label:'Precipitación', value:`${climaActual?.precipitacion ?? '--'} mm` },
                     { icon:'humidity_percentage', label:'Condición', value: climaActual?.condicion ?? '--' },
@@ -221,23 +217,10 @@ export default function ClimaPage() {
                     </div>
                   ))}
                 </div>
-                {/* RF43 — Alerta climática */}
                 {climaActual?.alerta && (
-                  <div className="animate-fade-in" style={{
-                    display:'flex', alignItems:'center', gap:'12px',
-                    padding:'16px', borderRadius:'12px',
-                    backgroundColor:'var(--color-error-container)',
-                    border:'1px solid var(--color-error)'
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize:'28px', color:'var(--color-error)', flexShrink:0 }}>
-                      warning
-                    </span>
-                    <div>
-                      <p style={{ fontWeight:700, color:'var(--color-error)', margin:'0 0 4px' }}>Alerta Climática</p>
-                      <p style={{ fontSize:'0.875rem', color:'var(--color-on-error-container)', margin:0 }}>
-                        {climaActual.alerta}
-                      </p>
-                    </div>
+                  <div style={{ marginTop:'16px', padding:'8px 12px', borderRadius:'8px', backgroundColor:'rgba(255,255,255,0.2)', fontSize:'0.8rem' }}>
+                    <span className="material-symbols-outlined" style={{fontSize:'16px', verticalAlign:'middle', marginRight:'4px'}}>warning</span>
+                    {climaActual.alerta}
                   </div>
                 )}
               </div>
