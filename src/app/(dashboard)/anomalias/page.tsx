@@ -99,6 +99,10 @@ export default function AnomaliasPage() {
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.idSiembra) { setError('Selecciona un cultivo.'); return }
+    if (!navigator.onLine) {
+      setError('Sin conexión. Conéctate a internet para guardar cambios.')
+      return
+    }
     setSaving(true)
     try {
       if (editando) {

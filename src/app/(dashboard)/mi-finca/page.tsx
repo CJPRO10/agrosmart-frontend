@@ -94,6 +94,10 @@ export default function MiFincaPage() {
 
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!navigator.onLine) {
+      setError('Sin conexión. Conéctate a internet para guardar cambios.')
+      return
+    }
     if (modalMode === 'crear' && !coordenadas) {
       setError('Selecciona la ubicación en el mapa.')
       return

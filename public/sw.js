@@ -83,19 +83,30 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+      self.skipWaiting()
+    }
+  })
   // Páginas HTML — Network First con fallback al cache, luego offline
   event.respondWith(
     fetch(request)
       .then((res) => {
         if (res.ok) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, res.clone()))
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
         }
         return res
       })
       .catch(() =>
-        caches.match(request).then((cached) =>
-          cached || caches.match('/offline')
-        )
+        caches.match(request).then((cached) => {
+          if (cached) return cached
+          // Si es navegación y no hay caché, mostrar offline
+          if (request.mode === 'navigate') {
+            return caches.match('/offline')
+          }
+          return new Response('Sin conexión', { status: 503 })
+        })
       )
   )
 })

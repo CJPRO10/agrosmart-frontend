@@ -168,6 +168,10 @@ export default function CultivosPage() {
 
   const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!navigator.onLine) {
+      setError('Sin conexión. Conéctate a internet para guardar cambios.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {

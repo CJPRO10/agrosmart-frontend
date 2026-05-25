@@ -1,4 +1,3 @@
-// -------Hook para detectar estado online/offline -------
 import { useEffect } from 'react'
 import { useUIStore } from '@/store/uiStore'
 
@@ -8,7 +7,11 @@ export function useOfflineStatus() {
   useEffect(() => {
     setOnline(navigator.onLine)
 
-    const handleOnline  = () => setOnline(true)
+    const handleOnline  = () => {
+      setOnline(true)
+      // Forzar recarga de la página al volver online
+      window.location.reload()
+    }
     const handleOffline = () => setOnline(false)
 
     window.addEventListener('online',  handleOnline)
