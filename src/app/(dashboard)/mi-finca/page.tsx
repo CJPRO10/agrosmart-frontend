@@ -92,14 +92,14 @@ export default function MiFincaPage() {
   }
 
   const abrirEditar = (finca: Finca) => {
-    // Busca el id de la ubicación por nombre ya que el backend devuelve nombreUbicacion
     const ubicacion = UBICACIONES.find(u => u.nombre === finca.nombreUbicacion)
     setForm({
       nombreFinca:  finca.nombreFinca,
       hectareas:    finca.hectareas,
       numLotes:     finca.numLotes,
-      idUbicacion:  ubicacion?.id ?? 1,
+      idUbicacion:  finca.idUbicacion ?? ubicacion?.id ?? 1,
     })
+    setCoordenadas(null) // limpiar para que el mapa empiece sin marca
     setFincaActiva(finca)
     setModalMode('editar')
   }
@@ -115,7 +115,6 @@ export default function MiFincaPage() {
     setSaving(true)
     try {
       if (modalMode === 'crear') {
-        // Crear o reusar ubicación con las coordenadas del mapa
         const ubicacion = await ubicacionesApi.crear({
           nombre:   coordenadas!.nombre,
           latitud:  coordenadas!.lat,
@@ -123,7 +122,20 @@ export default function MiFincaPage() {
         })
         await fincasApi.crear({ ...form, idUbicacion: ubicacion.idUbicacion })
       } else if (modalMode === 'editar' && fincaActiva) {
-        await fincasApi.actualizar(fincaActiva.idFinca, form)
+        // Si el usuario seleccionó nueva ubicación en el mapa, actualizarla
+        let idUbicacionFinal = form.idUbicacion
+        if (coordenadas) {
+          const ubicacion = await ubicacionesApi.crear({
+            nombre:   coordenadas.nombre,
+            latitud:  coordenadas.lat,
+            longitud: coordenadas.lng,
+          })
+          idUbicacionFinal = ubicacion.idUbicacion
+        }
+        await fincasApi.actualizar(fincaActiva.idFinca, {
+          ...form,
+          idUbicacion: idUbicacionFinal,
+        })
       }
       cerrarModal()
       await cargarFincas()
@@ -326,15 +338,17 @@ export default function MiFincaPage() {
               </div>
 
               <div>
-                <label className="input-label">Ubicación de la finca</label>
+                <label className="input-label">Cambiar ubicación (opcional)</label>
+                <p style={{ fontSize:'0.75rem', color:'var(--color-on-surface-variant)', margin:'0 0 8px' }}>
+                  Haz click en el mapa para actualizar la ubicación de la finca
+                </p>
                 <MapaPicker
-                  latitud={coordenadas?.lat}
-                  longitud={coordenadas?.lng}
                   onChange={(lat, lng, nombre) => setCoordenadas({ lat, lng, nombre })}
                 />
-                {!coordenadas && (
-                  <p style={{ fontSize:'0.75rem', color:'var(--color-error)', margin:'4px 0 0' }}>
-                    Selecciona la ubicación en el mapa *
+                {coordenadas && (
+                  <p style={{ fontSize:'0.8rem', color:'var(--color-primary)', margin:'6px 0 0', display:'flex', alignItems:'center', gap:'4px' }}>
+                    <span className="material-symbols-outlined" style={{fontSize:'16px'}}>location_on</span>
+                    Nueva ubicación: {coordenadas.nombre}
                   </p>
                 )}
               </div>

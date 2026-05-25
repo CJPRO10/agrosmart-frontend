@@ -101,13 +101,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       <aside style={{
-        position:'fixed', left:0, top:0, height:'100%', zIndex:50,
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        height: '100%',
+        zIndex: 50,
         width: isMobile ? (sidebarOpen ? '280px' : '0px') : sidebarW,
-        transition:'width 0.3s', overflow:'hidden',
-        display:'flex', flexDirection:'column', padding:'24px 16px',
-        backgroundColor:'var(--color-surface-container-lowest)',
-        borderRight:`1px solid var(--color-outline-variant)`,
-        boxShadow:'2px 0 8px rgba(0,0,0,0.05)'
+        minWidth: 0,
+        overflow: 'hidden',
+        transition: 'width 0.3s',
+        backgroundColor: 'var(--color-surface-container-low)',
+        borderRight: '1px solid var(--color-outline-variant)',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
         {/* Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'24px', overflow:'hidden' }}>
@@ -194,11 +200,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Área principal */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', marginLeft: isMobile ? '0px' : sidebarW, transition:'margin-left 0.3s' }}>
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        marginLeft: isMobile ? '0px' : sidebarW,
+        transition: 'margin-left 0.3s',
+        minWidth: 0,
+        width: isMobile ? '100%' : undefined,
+      }}>
 
         {/* Topbar */}
         <header style={{
-          position:'sticky', top:0, zIndex:40, height:'64px',
+          position:'fixed', top:0, left: isMobile ? '0px' : sidebarW, right: 0, zIndex:40, height:'64px',
           display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 24px',
           backgroundColor:'rgba(249,250,242,0.92)', backdropFilter:'blur(8px)',
           borderBottom:`1px solid var(--color-outline-variant)`
