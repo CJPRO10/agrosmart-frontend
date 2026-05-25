@@ -99,6 +99,8 @@ export type EstadoTarea = 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADA'
 export interface EjecucionTarea {
   idEjecucion: number
   estado: EstadoTarea
+  operarioAsignado?: string
+  auxiliarAsignado?: string
 }
 
 export interface Tarea {

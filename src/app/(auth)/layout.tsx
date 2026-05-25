@@ -1,7 +1,6 @@
-// Layout para páginas públicas (login, registro)
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-screen bg-background text-on-background">
+    <main style={{ minHeight:'100vh', backgroundColor:'var(--color-background)', color:'var(--color-on-background)' }}>
       {children}
     </main>
   )

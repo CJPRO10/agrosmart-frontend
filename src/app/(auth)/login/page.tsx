@@ -7,13 +7,12 @@ import type { LoginRequest } from '@/types'
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth()
-
-  const [form, setForm] = useState<LoginRequest>({ correo: '', contrasena: '' })
+  const [form, setForm]           = useState<LoginRequest>({ correo: '', contrasena: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError]         = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
     setError(null)
   }
 
@@ -31,157 +30,158 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-[1100px] grid grid-cols-1 md:grid-cols-2 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden min-h-[680px]">
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px', backgroundColor:'var(--color-background)' }}>
+      <div style={{ width:'100%', maxWidth:'1000px', display:'grid', gridTemplateColumns:'1fr 1fr', borderRadius:'20px', overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.12)', minHeight:'600px' }}>
 
-        {/* ── Panel izquierdo: branding ── */}
-        <section className="relative hidden md:flex flex-col justify-between p-lg overflow-hidden bg-primary-container">
-          {/* Imagen de fondo */}
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1594488651083-bb82abd507c5?q=80&w=2070&auto=format&fit=crop"
-              alt="Campo agrícola Magdalena"
-              className="w-full h-full object-cover opacity-30"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary-container via-primary-container/50 to-transparent" />
-          </div>
+        {/* Panel izquierdo — branding */}
+        <div style={{ position:'relative', display:'flex', flexDirection:'column', justifyContent:'space-between', padding:'48px', background:'linear-gradient(160deg, #1a4d1a 0%, #0d2e0d 100%)', overflow:'hidden' }}>
+          {/* Imagen fondo */}
+          <div style={{ position:'absolute', inset:0, backgroundImage:'url("https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&q=80")', backgroundSize:'cover', backgroundPosition:'center', opacity:0.2 }} />
+          <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg, rgba(21,66,18,0.95) 0%, rgba(13,46,13,0.85) 100%)' }} />
 
-          {/* Logo */}
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-lg">
-              <span className="material-symbols-outlined text-4xl text-on-primary-container">potted_plant</span>
-              <h1 className="text-headline-md text-white tracking-tight">AgroMagdalena</h1>
+          {/* Contenido */}
+          <div style={{ position:'relative', zIndex:1 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'48px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize:'32px', color:'#7EC850' }}>potted_plant</span>
+              <span style={{ fontSize:'1.25rem', fontWeight:800, color:'white', letterSpacing:'-0.5px' }}>AgroSmart</span>
             </div>
-            <div className="space-y-sm max-w-md">
-              <h2 className="text-headline-lg text-white">Gestión agrícola inteligente.</h2>
-              <p className="text-body-lg text-on-primary-container opacity-90">
-                Potencia tu producción con herramientas diseñadas para el campo colombiano.
-              </p>
-            </div>
-          </div>
-
-          {/* Footer branding */}
-          <div className="relative z-10 flex items-center gap-base">
-            <div className="w-12 h-0.5 bg-white rounded-full" />
-            <p className="text-label-md uppercase tracking-widest text-on-primary-container">
-              Progreso Regional
+            <h2 style={{ fontSize:'2rem', fontWeight:800, color:'white', lineHeight:1.2, margin:'0 0 16px', letterSpacing:'-0.5px' }}>
+              Gestión agrícola<br/>
+              <span style={{ color:'#7EC850' }}>inteligente.</span>
+            </h2>
+            <p style={{ fontSize:'1rem', color:'rgba(255,255,255,0.7)', lineHeight:1.6, maxWidth:'280px' }}>
+              Potencia tu producción con herramientas diseñadas para el campo colombiano.
             </p>
           </div>
-        </section>
 
-        {/* ── Panel derecho: formulario ── */}
-        <section className="flex flex-col justify-center px-8 py-12 md:px-16 bg-surface-container-lowest">
-          <div className="max-w-md w-full mx-auto">
+          {/* Features */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', gap:'16px' }}>
+            {[
+              { icon:'potted_plant', text:'Gestión de cultivos en tiempo real' },
+              { icon:'cloudy_snowing', text:'Monitor climático del Magdalena'  },
+              { icon:'lightbulb',    text:'Recomendaciones con IA'             },
+            ].map(f => (
+              <div key={f.text} style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                <div style={{ width:'36px', height:'36px', borderRadius:'8px', backgroundColor:'rgba(126,200,80,0.15)', border:'1px solid rgba(126,200,80,0.3)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize:'18px', color:'#7EC850' }}>{f.icon}</span>
+                </div>
+                <span style={{ fontSize:'0.875rem', color:'rgba(255,255,255,0.75)' }}>{f.text}</span>
+              </div>
+            ))}
+          </div>
 
-            {/* Logo móvil */}
-            <div className="md:hidden flex items-center gap-2 mb-lg">
-              <span className="material-symbols-outlined text-primary text-3xl">potted_plant</span>
-              <h1 className="text-headline-sm text-primary">AgroMagdalena</h1>
+          {/* Footer */}
+          <div style={{ position:'relative', zIndex:1, display:'flex', alignItems:'center', gap:'12px', marginTop:'32px' }}>
+            <div style={{ width:'32px', height:'2px', backgroundColor:'rgba(255,255,255,0.3)', borderRadius:'9999px' }} />
+            <span style={{ fontSize:'0.7rem', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.12em' }}>Progreso Regional</span>
+          </div>
+        </div>
+
+        {/* Panel derecho — formulario */}
+        <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', padding:'48px', backgroundColor:'var(--color-surface-container-lowest)' }}>
+          <div style={{ maxWidth:'360px', width:'100%', margin:'0 auto' }}>
+
+            {/* Encabezado */}
+            <div style={{ marginBottom:'36px' }}>
+              <h1 style={{ fontSize:'1.75rem', fontWeight:800, color:'var(--color-on-surface)', margin:'0 0 8px', letterSpacing:'-0.5px' }}>
+                Bienvenido
+              </h1>
+              <p style={{ fontSize:'0.9rem', color:'var(--color-on-surface-variant)', margin:0 }}>
+                Inicia sesión para continuar
+              </p>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-headline-lg text-on-surface mb-xs">Accede</h2>
-              <p className="text-body-md text-on-surface-variant">Inicia sesión para continuar</p>
-            </div>
-
-            {/* Error global */}
+            {/* Error */}
             {error && (
-              <div className="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-error-container text-on-error-container text-body-md animate-fade-in">
-                <span className="material-symbols-outlined text-[20px]">error</span>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', borderRadius:'10px', backgroundColor:'var(--color-error-container)', color:'var(--color-on-error-container)', fontSize:'0.875rem', marginBottom:'24px' }}>
+                <span className="material-symbols-outlined" style={{fontSize:'20px'}}>error</span>
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+
               {/* Correo */}
-              <div className="space-y-1">
-                <label className="text-label-md text-on-surface-variant ml-1 block" htmlFor="correo">
-                  Correo Electrónico
+              <div>
+                <label style={{ display:'block', fontSize:'0.8rem', fontWeight:600, color:'var(--color-on-surface-variant)', marginBottom:'8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+                  Correo electrónico
                 </label>
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">
-                    mail
-                  </span>
+                <div style={{ position:'relative' }}>
+                  <span className="material-symbols-outlined" style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)', pointerEvents:'none' }}>mail</span>
                   <input
-                    id="correo"
-                    name="correo"
-                    type="email"
-                    value={form.correo}
-                    onChange={handleChange}
+                    id="correo" name="correo" type="email"
+                    value={form.correo} onChange={handleChange}
                     placeholder="usuario@agro.co"
                     required
-                    className="w-full h-14 pl-12 pr-4 bg-surface-container-low border-b-2 border-outline-variant focus:border-primary focus:outline-none rounded-t-lg text-body-md transition-all"
+                    style={{ width:'100%', height:'52px', paddingLeft:'46px', paddingRight:'16px', borderRadius:'12px', border:'1.5px solid var(--color-outline-variant)', backgroundColor:'var(--color-surface-container-low)', fontSize:'0.9375rem', color:'var(--color-on-surface)', outline:'none', boxSizing:'border-box', transition:'border-color 0.2s' }}
+                    onFocus={e=>(e.currentTarget.style.borderColor='var(--color-primary)')}
+                    onBlur={e=>(e.currentTarget.style.borderColor='var(--color-outline-variant)')}
                   />
                 </div>
               </div>
 
               {/* Contraseña */}
-              <div className="space-y-1">
-                <label className="text-label-md text-on-surface-variant ml-1 block" htmlFor="contrasena">
+              <div>
+                <label style={{ display:'block', fontSize:'0.8rem', fontWeight:600, color:'var(--color-on-surface-variant)', marginBottom:'8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>
                   Contraseña
                 </label>
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">
-                    lock
-                  </span>
+                <div style={{ position:'relative' }}>
+                  <span className="material-symbols-outlined" style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', fontSize:'20px', color:'var(--color-outline)', pointerEvents:'none' }}>lock</span>
                   <input
-                    id="contrasena"
-                    name="contrasena"
+                    id="contrasena" name="contrasena"
                     type={showPassword ? 'text' : 'password'}
-                    value={form.contrasena}
-                    onChange={handleChange}
+                    value={form.contrasena} onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="w-full h-14 pl-12 pr-12 bg-surface-container-low border-b-2 border-outline-variant focus:border-primary focus:outline-none rounded-t-lg text-body-md transition-all"
+                    style={{ width:'100%', height:'52px', paddingLeft:'46px', paddingRight:'48px', borderRadius:'12px', border:'1.5px solid var(--color-outline-variant)', backgroundColor:'var(--color-surface-container-low)', fontSize:'0.9375rem', color:'var(--color-on-surface)', outline:'none', boxSizing:'border-box', transition:'border-color 0.2s' }}
+                    onFocus={e=>(e.currentTarget.style.borderColor='var(--color-primary)')}
+                    onBlur={e=>(e.currentTarget.style.borderColor='var(--color-outline-variant)')}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
-                  >
-                    <span className="material-symbols-outlined">
-                      {showPassword ? 'visibility_off' : 'visibility'}
-                    </span>
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    style={{ position:'absolute', right:'14px', top:'50%', transform:'translateY(-50%)', border:'none', background:'transparent', cursor:'pointer', color:'var(--color-outline)', display:'flex', alignItems:'center' }}>
+                    <span className="material-symbols-outlined" style={{fontSize:'20px'}}>{showPassword ? 'visibility_off' : 'visibility'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Botón */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary w-full rounded-full flex items-center justify-center gap-2"
-              >
+              {/* Botón submit */}
+              <button type="submit" disabled={isLoading}
+                style={{ height:'52px', borderRadius:'12px', border:'none', cursor:'pointer', fontSize:'1rem', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'8px', transition:'all 0.2s',
+                  backgroundColor: isLoading ? 'var(--color-primary-container)' : 'var(--color-primary)',
+                  color: isLoading ? 'var(--color-primary)' : 'white' }}>
                 {isLoading ? (
-                  <>
-                    <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                    Ingresando...
-                  </>
+                  <><span className="material-symbols-outlined animate-spin" style={{fontSize:'20px'}}>progress_activity</span> Ingresando...</>
                 ) : (
-                  <>
-                    Acceder
-                    <span className="material-symbols-outlined text-[20px]">login</span>
-                  </>
+                  <><span className="material-symbols-outlined" style={{fontSize:'20px'}}>login</span> Acceder</>
                 )}
               </button>
             </form>
 
             {/* Registro */}
-            <p className="mt-8 text-center text-body-md text-on-surface-variant">
-              ¿Todavía no tienes cuenta?{' '}
-              <Link href="/registro" className="text-primary font-semibold hover:underline underline-offset-4">
-                Regístrate
+            <p style={{ marginTop:'28px', textAlign:'center', fontSize:'0.875rem', color:'var(--color-on-surface-variant)' }}>
+              ¿No tienes cuenta?{' '}
+              <Link href="/registro" style={{ color:'var(--color-primary)', fontWeight:700, textDecoration:'none' }}>
+                Regístrate gratis
               </Link>
             </p>
-          </div>
 
-          {/* Footer */}
-          <footer className="mt-12 pt-6 border-t border-outline-variant flex flex-wrap justify-center gap-6 text-caption text-outline">
-            <a href="#" className="hover:text-primary transition-colors">Términos de Servicio</a>
-            <a href="#" className="hover:text-primary transition-colors">Política de Privacidad</a>
-            <span>© 2025 AgroMagdalena</span>
-          </footer>
-        </section>
+            {/* Volver */}
+            <div style={{ marginTop:'16px', textAlign:'center' }}>
+              <Link href="/" style={{ fontSize:'0.8rem', color:'var(--color-outline)', textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px' }}>
+                <span className="material-symbols-outlined" style={{fontSize:'16px'}}>arrow_back</span>
+                Volver al inicio
+              </Link>
+            </div>
+
+            {/* Footer */}
+            <div style={{ marginTop:'36px', paddingTop:'24px', borderTop:'1px solid var(--color-outline-variant)', display:'flex', justifyContent:'center', gap:'20px', flexWrap:'wrap' }}>
+              {['Términos','Privacidad','Soporte'].map(l => (
+                <a key={l} href="#" style={{ fontSize:'0.75rem', color:'var(--color-outline)', textDecoration:'none' }}>{l}</a>
+              ))}
+              <span style={{ fontSize:'0.75rem', color:'var(--color-outline)' }}>© 2025 AgroSmart</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
